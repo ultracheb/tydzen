@@ -2179,14 +2179,53 @@ async function downloadPhotos() {
   if (got && !dragging) render();
 }
 
-// first device: check the token, create the gist with what is here now
-async function connectSync(token) {
-  token = (token || '').trim();
-  if (!token) return toast('Устаўце токен з GitHub');
+const b64url = s => btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64url = s => atob(s.replace(/-/g, '+').replace(/_/g, '/'));
+const joinLink = () => `${location.origin}${location.pathname}#join=${b64url(JSON.stringify({ t: syncCfg.token, d: syncCfg.data, o: syncCfg.owner }))}`;
+const parseJoin = text => { const m = String(text).match(/#join=([\w-]+)/); if (!m) return null; try { return JSON.parse(unb64url(m[1])); } catch { return null; } };
+const shortId = id => String(id || '').slice(-6);
+
+// join an existing shared gist: what is on this device gets replaced by the shared data
+async function joinWith(cfg, ask = true) {
+  if (!cfg?.t || !cfg?.d) return toast('Спасылка пашкоджаная');
+  if (syncCfg?.data === cfg.d) return toast('Гэтая прылада ўжо ў агульнай шуфлядцы');
+  if (ask && !confirm('Падключыць гэтую прыладу да агульнай Шуфлядкі?\nСправы, якія зараз ляжаць на гэтай прыладзе, заменяцца агульнымі.')) return;
   const prev = syncCfg;
+  syncCfg = { token: cfg.t, data: cfg.d, owner: cfg.o, batch: null };
+  try {
+    etag = null; lastRemote = null;
+    if (!syncCfg.owner) syncCfg.owner = (await gh('GET', '/user')).json.login;
+    const remote = await pullRemote();
+    applyRemote({ ...emptyRemote(), ...remote });
+    lastRemote = deep(snapshot());
+    saveSyncCfg(); lastSyncAt = Date.now(); setSyncState('ok');
+    if ($('#settings').open) renderSyncBox();
+    toast('Гатова, вы ў агульнай Шуфлядцы!');
+    syncPhotos();
+  } catch (e) {
+    syncCfg = prev;
+    toast(e.status === 401 ? 'GitHub не прыняў ключ са спасылкі' : 'Не атрымалася падключыцца');
+  }
+}
+
+// the field takes a token (first device) or a link from another device;
+// with a token it first looks for a shared gist that already exists, so devices never end up in different ones
+async function connectSync(input) {
+  input = (input || '').trim();
+  if (!input) return toast('Устаўце токен або спасылку');
+  const link = parseJoin(input);
+  if (link) return joinWith(link);
+  const token = input, prev = syncCfg;
   syncCfg = { token };
   try {
     const me = await gh('GET', '/user');
+    const list = (await gh('GET', '/gists?per_page=100')).json || [];
+    const found = list.filter(g => g.files?.[DATA_FILE]).sort((a, b) => a.created_at.localeCompare(b.created_at))[0];
+    if (found) {
+      syncCfg = prev;
+      if (!confirm('На гэтым GitHub ужо ёсць агульная Шуфлядка. Далучыцца да яе?\nСправы, якія зараз ляжаць на гэтай прыладзе, заменяцца агульнымі.')) return;
+      return joinWith({ t: token, d: found.id, o: me.json.login }, false);
+    }
     markChanges(); persist();
     const out = deep(snapshot());
     const c = await gh('POST', '/gists', { description: 'Шуфлядка: агульныя справы', public: false, files: { [DATA_FILE]: { content: JSON.stringify(out) } } });
@@ -2194,7 +2233,7 @@ async function connectSync(token) {
     saveSyncCfg();
     lastRemote = out; etag = null; lastSyncAt = Date.now();
     setSyncState('ok'); renderSyncBox();
-    toast('Падключана! Цяпер дашліце спасылку на другую прыладу.');
+    toast('Падключана! Цяпер адкрыйце спасылку з налад на другой прыладзе.');
     syncPhotos();
   } catch (e) {
     syncCfg = prev;
@@ -2202,44 +2241,23 @@ async function connectSync(token) {
       : (e.status === 403 || e.status === 404) ? 'Токену не хапае права gist.' : 'Не атрымалася падключыцца. Праверце інтэрнэт.');
   }
 }
-const b64url = s => btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-const unb64url = s => atob(s.replace(/-/g, '+').replace(/_/g, '/'));
-const joinLink = () => `${location.origin}${location.pathname}#join=${b64url(JSON.stringify({ t: syncCfg.token, d: syncCfg.data, o: syncCfg.owner }))}`;
 
-// second device: opened the link from the first one
+// opened the link from another device
 async function joinFromHash() {
-  const m = location.hash.match(/^#join=([\w-]+)/);
-  if (!m) return;
+  if (!location.hash.startsWith('#join=')) return;
+  const cfg = parseJoin(location.hash);
   history.replaceState(null, '', location.pathname + location.search);
-  let cfg = null;
-  try { cfg = JSON.parse(unb64url(m[1])); } catch {}
-  if (!cfg?.t || !cfg?.d) return toast('Спасылка пашкоджаная');
-  if (syncCfg?.data === cfg.d) return toast('Гэтая прылада ўжо ў агульнай шуфлядцы');
-  if (!confirm('Падключыць гэтую прыладу да агульнай Шуфлядкі?\nСправы, якія зараз ляжаць на гэтай прыладзе, заменяцца агульнымі.')) return;
-  const prev = syncCfg;
-  syncCfg = { token: cfg.t, data: cfg.d, owner: cfg.o, batch: null };
-  try {
-    etag = null; lastRemote = null;
-    const remote = await pullRemote();
-    applyRemote({ ...emptyRemote(), ...remote });
-    lastRemote = deep(snapshot());
-    saveSyncCfg(); lastSyncAt = Date.now(); setSyncState('ok');
-    toast('Гатова, вы ў агульнай Шуфлядцы!');
-    syncPhotos();
-  } catch {
-    syncCfg = prev;
-    toast('Не атрымалася падключыцца па спасылцы');
-  }
+  return joinWith(cfg);
 }
 
 function renderSyncBox() {
   const b = $('#syncBody');
   if (!syncCfg?.data) {
-    b.innerHTML = `<p class="hint">Каб бачыць адны і тыя ж справы на дзвюх прыладах, Шуфлядка можа захоўваць іх у сакрэтным gist на GitHub. Без гэтага ўсё ляжыць толькі ў гэтым браўзеры.</p>`
-      + `<div class="sync-row"><input id="syncToken" type="password" placeholder="GitHub токен з правам gist" autocomplete="off" spellcheck="false" aria-label="GitHub токен"><button type="button" class="btn btn-primary" id="syncConnect">Падключыць</button></div>`
+    b.innerHTML = `<p class="hint">Пакуль справы ляжаць толькі ў гэтым браўзеры. На першай прыладзе ўстаўце сюды GitHub токен. На астатніх устаўце спасылку з налад першай (або проста адкрыйце яе).</p>`
+      + `<div class="sync-row"><input id="syncToken" type="password" placeholder="Токен або спасылка" autocomplete="off" spellcheck="false" aria-label="Токен або спасылка"><button type="button" class="btn btn-primary" id="syncConnect">Падключыць</button></div>`
       + `<a class="linkbtn" href="https://github.com/settings/tokens/new?scopes=gist&description=Shuflyadka" target="_blank" rel="noopener">Стварыць токен на GitHub</a>`;
   } else {
-    b.innerHTML = `<p class="hint">Падключана да GitHub <b>${esc(syncCfg.owner || '')}</b>. <span id="syncStatus">${esc(syncStatusText())}</span></p>`
+    b.innerHTML = `<p class="hint">Падключана да GitHub <b>${esc(syncCfg.owner || '')}</b>, сховішча <b>#${esc(shortId(syncCfg.data))}</b>. <span id="syncStatus">${esc(syncStatusText())}</span></p>`
       + `<div class="ed-foot"><button type="button" class="btn btn-primary" id="syncShare">Спасылка для другой прылады</button><button type="button" class="btn" id="syncNow">Сінхранізаваць</button><button type="button" class="btn btn-danger" id="syncOff">Адключыць</button></div>`
       + `<input id="syncLink" readonly hidden aria-label="Спасылка для другой прылады">`
       + `<p class="small">У спасылцы схаваны ключ доступу, таму дасылайце яе толькі ў асабісты чат.</p>`;

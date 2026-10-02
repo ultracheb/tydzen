@@ -5,8 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#E7EAEE" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#141824" media="(prefers-color-scheme: dark)">
-<title>Тыдзень</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='12' cy='16' r='9' fill='%230078BF'/%3E%3Ccircle cx='20' cy='16' r='9' fill='%23FF48B0' fill-opacity='.85'/%3E%3C/svg%3E">
+<title>Шуфлядка</title>
+<link rel="icon" type="image/png" sizes="64x64" href="icon-64.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Шуфлядка">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -42,7 +47,7 @@
 
 [hidden]{display:none !important}
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;scrollbar-gutter:stable}
 html,body{margin:0}
 body{
   min-height:100dvh; background-color:var(--paper); background-image:var(--noise);
@@ -67,6 +72,8 @@ button{cursor:pointer}
 .mark i{position:absolute;top:0;width:20px;height:20px;border-radius:50%;mix-blend-mode:var(--blend)}
 .mark i:first-child{left:0;background:var(--blue)}
 .mark i:last-child{left:10px;background:var(--pink)}
+.mark img{position:absolute;left:0;top:-5px;width:30px;height:30px;border-radius:50%;object-fit:cover;box-shadow:2px 2px 0 var(--pink)}
+.mark:has(img) i{display:none}
 .grow{flex:1}
 
 .weeknav{display:flex;align-items:center;gap:6px}
@@ -192,6 +199,35 @@ button{cursor:pointer}
 .time{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink)}
 .cat-name{color:var(--ink-2)}
 .has-note{display:inline-grid;color:var(--ink-3)}
+.has-photo{display:inline-flex;align-items:center;gap:2px;color:var(--ink-3);font-size:11.5px}
+
+/* photos on cards: shown as a taped-on print, hidden in the narrow desktop day columns */
+.cover{grid-column:1 / -1;margin:-9px -8px 2px;height:96px;border-radius:6px 6px 0 0;overflow:hidden;background:var(--paper)}
+.cover img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none}
+.card.is-done .cover{opacity:.5}
+.card.has-cat:has(.cover)::before{z-index:1}
+@media (min-width: 881px){ .board .cover{display:none} }
+.card.file-over,.ed.file-over{outline:2px dashed var(--pink);outline-offset:3px}
+
+.files{display:flex;flex-wrap:wrap;gap:8px}
+.thumb{position:relative;width:78px;height:78px;border-radius:10px;overflow:hidden;background:var(--paper);border:1px solid var(--line)}
+.thumb .open{all:unset;display:block;width:100%;height:100%;cursor:zoom-in}
+.thumb .open:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .rm{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;border:0;padding:0;background:rgba(20,24,36,.72);color:#fff;font-size:15px;line-height:1;display:grid;place-items:center}
+.thumb.loading{background-image:radial-gradient(var(--halftone-pink) 1.1px, transparent 1.5px);background-size:8px 8px;animation:breathe 1s ease-in-out infinite alternate}
+@keyframes breathe{from{opacity:.5}to{opacity:1}}
+.addfile{position:relative;width:78px;height:78px;border-radius:10px;border:1.5px dashed var(--line-2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:12px;color:var(--ink-2);cursor:pointer}
+.addfile:hover{border-color:var(--ink);color:var(--ink)}
+.addfile:focus-within{outline:2px solid var(--blue);outline-offset:2px}
+.addfile input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+
+#viewer{margin:auto;width:min(96vw, 1100px);max-width:96vw;max-height:96dvh;border:0;border-radius:12px;padding:0;background:#0E1018;color:#E8EBF3;box-shadow:none;overflow:hidden}
+#viewer::backdrop{background:rgba(8,10,16,.82)}
+.vbar{display:flex;align-items:center;gap:8px;padding:8px 10px;font-size:14px}
+.vbtn{width:36px;height:36px;flex:none;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;display:grid;place-items:center;padding:0}
+.vbtn:hover{background:rgba(255,255,255,.1)}
+#vImg{display:block;max-width:100%;max-height:calc(96dvh - 54px);margin:0 auto;object-fit:contain}
 .gmark{width:8px;height:8px;rotate:45deg;background:var(--dc);flex:none;border-radius:1px}
 .who{display:inline-flex;margin-left:auto;isolation:isolate;flex:none}
 .who i{width:12px;height:12px;border-radius:50%;mix-blend-mode:var(--blend)}
@@ -504,7 +540,7 @@ dialog::backdrop{background:rgba(20,24,36,.38);backdrop-filter:blur(2px);-webkit
 <body>
 
 <header class="top">
-  <div class="brand"><span class="mark" aria-hidden="true"><i></i><i></i></span><span>Тыдзень</span></div>
+  <div class="brand"><span class="mark" aria-hidden="true"><i></i><i></i><img src="icon-64.png" alt="" onerror="this.remove()"></span><span>Шуфлядка</span></div>
 
   <nav class="weeknav" id="weeknav" aria-label="Тыдні">
     <button class="iconbtn" id="prevWeek" type="button" aria-label="Папярэдні тыдзень">
@@ -543,7 +579,7 @@ dialog::backdrop{background:rgba(20,24,36,.38);backdrop-filter:blur(2px);-webkit
   </button>
   <button type="button" data-view="backlog">
     <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M4 6h14M4 11h14M4 16h9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-    <span>Шуфлядка</span>
+    <span>Задумы</span>
   </button>
   <button type="button" data-view="horizon">
     <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><path d="M2.5 16h17M6 16a5 5 0 0 1 10 0M11 5v2.5M4.6 7.6l1.7 1.7M17.4 7.6l-1.7 1.7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -560,6 +596,7 @@ dialog::backdrop{background:rgba(20,24,36,.38);backdrop-filter:blur(2px);-webkit
     <input id="edTitle" class="ed-title" required placeholder="Што трэба зрабіць" aria-label="Назва">
     <div class="field"><span>Перанесці на</span><div class="moves" id="edMoves"></div></div>
     <textarea id="edNote" rows="2" placeholder="Нататка: адрас, спасылка, што ўзяць з сабой" aria-label="Нататка"></textarea>
+    <div class="field"><span>Фота</span><div class="files" id="edFiles"></div></div>
     <div class="row">
       <label class="field">Дзе ляжыць<select id="edWhere"></select></label>
       <label class="field">Час<input id="edTime" type="time"></label>
@@ -590,6 +627,16 @@ dialog::backdrop{background:rgba(20,24,36,.38);backdrop-filter:blur(2px);-webkit
       <button type="submit" class="btn btn-primary">Захаваць</button>
     </div>
   </form>
+</dialog>
+
+<dialog id="viewer" aria-label="Фота">
+  <div class="vbar">
+    <span id="vCount"></span><span class="grow"></span>
+    <button type="button" class="vbtn" id="vPrev" aria-label="Папярэдняе фота"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M8.5 3 4.5 7l4 4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button type="button" class="vbtn" id="vNext" aria-label="Наступнае фота"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M5.5 3l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button type="button" class="vbtn" id="vClose" aria-label="Зачыніць"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3.5 3.5l7 7M10.5 3.5l-7 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+  </div>
+  <img id="vImg" alt="">
 </dialog>
 
 <dialog id="settings" aria-label="Налады">
@@ -685,6 +732,8 @@ const I = {
   plus:  '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M7 2.5v9M2.5 7h9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
   chev:  '<svg class="chev" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   note:  '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 3.5h7M2.5 6h7M2.5 8.5h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
+  photo: '<svg width="13" height="12" viewBox="0 0 13 12" aria-hidden="true"><rect x="1" y="2.5" width="11" height="8.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="6.5" cy="6.7" r="2" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M4.6 2.5l.9-1.4h2l.9 1.4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>',
+  photoBig: '<svg width="22" height="20" viewBox="0 0 13 12" aria-hidden="true"><rect x="1" y="2.5" width="11" height="8.5" rx="2" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="6.5" cy="6.7" r="2" fill="none" stroke="currentColor" stroke-width="1"/><path d="M4.6 2.5l.9-1.4h2l.9 1.4" fill="none" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg>',
   tick:  '<svg width="9" height="9" viewBox="0 0 10 10" aria-hidden="true"><path d="M1.6 5.3 4 7.5 8.4 2.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 };
 
@@ -780,6 +829,7 @@ function normalize() {
     if (t.cat && !catIds.has(t.cat)) t.cat = '';
     if (t.done && !t.doneOn) t.doneOn = t.where.startsWith('d:') ? t.where.slice(2) : iso(today0());
     if (typeof t.ord !== 'number') t.ord = 0;
+    if (!Array.isArray(t.files)) t.files = [];
   });
   db.v = 3;
 }
@@ -894,13 +944,16 @@ function cardHTML(t, o = {}) {
     t.time ? `<span class="time">${esc(t.time)}</span>` : '',
     o.wide && c ? `<span class="cat-name">${c.name}</span>` : '',
     !o.wide && t.note ? `<span class="has-note" title="Ёсць нататка">${I.note}</span>` : '',
+    t.files?.length ? `<span class="has-photo" title="Фота: ${t.files.length}">${I.photo}${t.files.length > 1 ? t.files.length : ''}</span>` : '',
     dream && !dream.done ? `<span class="gmark" style="--dc:${dream.color}" title="Крок да мары: ${esc(dream.title)}"></span>` : '',
     whoHTML(t.who),
   ].join('');
   let action = '';
   if (o.pull) action = `<button type="button" class="nudge pull" aria-label="${o.pull}" title="${o.pull}">${I.plus}</button>`;
   else if (o.nudge && !t.done) action = `<button type="button" class="nudge" aria-label="${o.nudge}" title="${o.nudge}">${I.next}</button>`;
+  const f0 = t.files?.[0];
   return `<article class="${cls}" data-id="${esc(t.id)}"${c ? ` style="--cat:${c.color}"` : ''} tabindex="0">`
+    + (f0 ? `<span class="cover"><img data-file="${esc(f0.id)}" alt=""${srcAttr(f0.id)}></span>` : '')
     + `<button type="button" class="check" aria-pressed="${!!t.done}" aria-label="${t.done ? 'Вярнуць у незробленыя' : 'Адзначыць зробленым'}">${I.check}</button>`
     + `<div class="c-body"><div class="c-title">${esc(t.title)}</div>`
     + (o.wide && t.note ? `<div class="c-note">${esc(t.note)}</div>` : '')
@@ -991,7 +1044,7 @@ function boardHTML(ws) {
 }
 
 function weekHTML() {
-  return `<div class="wk"><aside class="side" aria-label="Шуфлядка">${sideHTML()}</aside>${boardHTML(parseISO(ui.weekStart))}</div>`;
+  return `<div class="wk"><aside class="side" aria-label="Задумы">${sideHTML()}</aside>${boardHTML(parseISO(ui.weekStart))}</div>`;
 }
 
 /* ----- mobile: day strip, single day, list ----- */
@@ -1025,8 +1078,8 @@ function mDayHTML() {
     + listHTML('d:' + k, 'Пуста. Дадайце справу або вазьміце са спісу ніжэй.', { nudge: 'На наступны дзень' })
     + quickHTML('d:' + k, `+ Дадаць на ${DAY_ACC[i]}`, 'add')
     + `</section>`
-    + `<section class="tray"><div class="tray-head"><h3>${week.name}</h3><span class="count">${openCount(week.where)}</span><button type="button" class="linkbtn" data-goview="backlog">Адкрыць шуфлядку</button></div>`
-    + listHTML(week.where, 'Тут пуста. Новыя справы на тыдзень можна дадаць у шуфлядцы.', { pull: `Узяць на ${DAY_ACC[i]}` })
+    + `<section class="tray"><div class="tray-head"><h3>${week.name}</h3><span class="count">${openCount(week.where)}</span><button type="button" class="linkbtn" data-goview="backlog">Усе задумы</button></div>`
+    + listHTML(week.where, 'Тут пуста. Справы на тыдзень можна дадаць у «Задумах».', { pull: `Узяць на ${DAY_ACC[i]}` })
     + `</section>`;
 }
 
@@ -1199,6 +1252,7 @@ function render() {
   else html = doneHTML();
   app.innerHTML = html;
   initSortables();
+  hydrate(app);
   flashId = null;
   if (refocus) {
     const inp = app.querySelector(`.quick[data-where="${refocus}"] input`);
@@ -1393,6 +1447,175 @@ function shiftDay(n) {
   render();
 }
 
+/* ---------- photos: stored in IndexedDB (localStorage is far too small for images) ---------- */
+const fileStore = (() => {
+  let p = null;
+  const open = () => p || (p = new Promise((res, rej) => {
+    const r = indexedDB.open('shuflyadka-files', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('files', { keyPath: 'id' });
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => { p = null; rej(r.error); };
+  }));
+  const run = (mode, fn) => open().then(d => new Promise((res, rej) => {
+    const tx = d.transaction('files', mode), req = fn(tx.objectStore('files'));
+    tx.oncomplete = () => res(req.result);
+    tx.onerror = tx.onabort = () => rej(tx.error);
+  }));
+  return {
+    put: rec => run('readwrite', st => st.put(rec)),
+    get: id => run('readonly', st => st.get(id)),
+    del: id => run('readwrite', st => st.delete(id)),
+    keys: () => run('readonly', st => st.getAllKeys()),
+  };
+})();
+const urlCache = new Map();
+const srcAttr = id => { const u = urlCache.get(id); return u ? ` src="${u.thumb}"` : ''; };
+async function fileUrls(id) {
+  if (urlCache.has(id)) return urlCache.get(id);
+  const r = await fileStore.get(id);
+  if (!r) return null;
+  const u = { thumb: URL.createObjectURL(r.thumb), full: URL.createObjectURL(r.full) };
+  urlCache.set(id, u);
+  return u;
+}
+async function hydrate(root) {
+  for (const img of $$('img[data-file]:not([src])', root)) {
+    const u = await fileUrls(img.dataset.file).catch(() => null);
+    if (u) img.src = u.thumb; else img.closest('.cover')?.remove();
+  }
+}
+function decodeImage(file) {
+  const viaImg = () => new Promise((res, rej) => {
+    const img = new Image(), u = URL.createObjectURL(file);
+    img.onload = () => { URL.revokeObjectURL(u); res(img); };
+    img.onerror = () => { URL.revokeObjectURL(u); rej(new Error('decode')); };
+    img.src = u;
+  });
+  return window.createImageBitmap ? createImageBitmap(file).catch(viaImg) : viaImg();
+}
+function scaleImage(src, max, q) {
+  const sw = src.naturalWidth || src.width, sh = src.naturalHeight || src.height;
+  const k = Math.min(1, max / Math.max(sw, sh));
+  const w = Math.max(1, Math.round(sw * k)), h = Math.max(1, Math.round(sh * k));
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const x = c.getContext('2d');
+  x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.imageSmoothingQuality = 'high';
+  x.drawImage(src, 0, 0, w, h);
+  return new Promise((res, rej) => c.toBlob(b => b ? res({ blob: b, w, h }) : rej(new Error('encode')), 'image/jpeg', q));
+}
+// shrink to a sane size, keep a small thumbnail next to it
+async function ingest(file) {
+  const src = await decodeImage(file);
+  const full = await scaleImage(src, 1600, 0.85), thumb = await scaleImage(src, 420, 0.8);
+  src.close?.();
+  const id = uid();
+  await fileStore.put({ id, full: full.blob, thumb: thumb.blob, w: full.w, h: full.h });
+  urlCache.set(id, { thumb: URL.createObjectURL(thumb.blob), full: URL.createObjectURL(full.blob) });
+  return { id, w: full.w, h: full.h };
+}
+const imagesOf = list => [...(list || [])].filter(f => f.type?.startsWith('image/'));
+const hasFiles = e => [...(e.dataTransfer?.types || [])].includes('Files');
+async function gcFiles() {
+  try {
+    const used = new Set(db.tasks.flatMap(t => (t.files || []).map(f => f.id)));
+    for (const k of await fileStore.keys()) if (!used.has(k)) await fileStore.del(k);
+  } catch {}
+}
+const blobToData = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(b); });
+
+// editor photo strip (changes apply on save, like the other fields)
+let edFiles = [], edPending = 0;
+function renderEdFiles() {
+  $('#edFiles').innerHTML = edFiles.map((f, i) =>
+    `<div class="thumb"><button type="button" class="open" data-view-i="${i}" aria-label="Адкрыць фота ${i + 1}"><img data-file="${esc(f.id)}" alt=""${srcAttr(f.id)}></button>`
+    + `<button type="button" class="rm" data-rm-i="${i}" aria-label="Прыбраць фота">×</button></div>`).join('')
+    + '<div class="thumb loading"></div>'.repeat(edPending)
+    + `<label class="addfile">${I.photoBig}<span>Дадаць</span><input type="file" accept="image/*" multiple aria-label="Дадаць фота"></label>`;
+  hydrate($('#edFiles'));
+}
+async function addEditorFiles(list) {
+  const imgs = imagesOf(list); if (!imgs.length) return;
+  const forId = editingId;
+  edPending += imgs.length; renderEdFiles();
+  let failed = 0;
+  for (const f of imgs) {
+    try { const r = await ingest(f); if (editingId === forId) edFiles.push(r); } catch { failed++; }
+    edPending--;
+    if (editingId === forId) renderEdFiles();
+  }
+  if (failed) toast(failed > 1 ? `Не атрымалася дадаць ${failed} фота` : 'Не атрымалася дадаць фота');
+}
+$('#edFiles').addEventListener('change', e => { if (e.target.type === 'file') { addEditorFiles(e.target.files); e.target.value = ''; } });
+$('#edFiles').addEventListener('click', e => {
+  const v = e.target.closest('[data-view-i]'); if (v) return openViewer(edFiles.map(f => f.id), +v.dataset.viewI);
+  const r = e.target.closest('[data-rm-i]'); if (r) { edFiles.splice(+r.dataset.rmI, 1); renderEdFiles(); }
+});
+$('#editor').addEventListener('paste', e => {
+  const imgs = imagesOf(e.clipboardData?.files);
+  if (imgs.length) { e.preventDefault(); addEditorFiles(imgs); }
+});
+$('#editor').addEventListener('dragover', e => { if (!hasFiles(e)) return; e.preventDefault(); $('#edForm').classList.add('file-over'); });
+$('#editor').addEventListener('dragleave', e => { if (!$('#edForm').contains(e.relatedTarget)) $('#edForm').classList.remove('file-over'); });
+$('#editor').addEventListener('drop', e => { if (!hasFiles(e)) return; e.preventDefault(); $('#edForm').classList.remove('file-over'); addEditorFiles(e.dataTransfer.files); });
+
+// drop a photo straight onto a card
+app.addEventListener('dragover', e => {
+  if (!hasFiles(e)) return;
+  const c = e.target.closest('.card');
+  $$('.card.file-over', app).forEach(x => { if (x !== c) x.classList.remove('file-over'); });
+  if (!c) return;
+  e.preventDefault(); e.dataTransfer.dropEffect = 'copy';
+  c.classList.add('file-over');
+});
+app.addEventListener('dragleave', e => { const c = e.target.closest('.card'); if (c && !c.contains(e.relatedTarget)) c.classList.remove('file-over'); });
+app.addEventListener('drop', async e => {
+  if (!hasFiles(e)) return;
+  const c = e.target.closest('.card'); if (!c) return;
+  e.preventDefault(); c.classList.remove('file-over');
+  const t = byId(c.dataset.id), imgs = imagesOf(e.dataTransfer.files);
+  if (!t || !imgs.length) return;
+  const added = [];
+  for (const f of imgs) { try { added.push(await ingest(f)); } catch {} }
+  if (!added.length) return toast('Не атрымалася дадаць фота');
+  t.files = [...(t.files || []), ...added];
+  save(); render();
+  toast(added.length > 1 ? `Дададзена ${added.length} фота` : 'Фота дададзена');
+});
+// a file dropped next to a card should not make the browser navigate away
+window.addEventListener('dragover', e => { if (hasFiles(e)) e.preventDefault(); });
+window.addEventListener('drop', e => { if (hasFiles(e)) e.preventDefault(); });
+
+// full-size viewer
+let vList = [], vIdx = 0;
+async function showViewer() {
+  const u = await fileUrls(vList[vIdx]).catch(() => null);
+  $('#vImg').src = u ? u.full : '';
+  $('#vCount').textContent = vList.length > 1 ? `${vIdx + 1} з ${vList.length}` : '';
+  $('#vPrev').hidden = $('#vNext').hidden = vList.length < 2;
+}
+function openViewer(ids, i) {
+  if (!ids.length) return;
+  vList = ids; vIdx = i;
+  showViewer();
+  if (!$('#viewer').open) $('#viewer').showModal();
+}
+const stepViewer = n => { if (vList.length < 2) return; vIdx = (vIdx + n + vList.length) % vList.length; showViewer(); };
+$('#vPrev').addEventListener('click', () => stepViewer(-1));
+$('#vNext').addEventListener('click', () => stepViewer(1));
+$('#vClose').addEventListener('click', () => $('#viewer').close());
+$('#vImg').addEventListener('click', () => stepViewer(1));
+$('#viewer').addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft') { e.preventDefault(); stepViewer(-1); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); stepViewer(1); }
+});
+let vsw = null;
+$('#viewer').addEventListener('touchstart', e => { vsw = e.touches.length === 1 ? e.touches[0].clientX : null; }, { passive: true });
+$('#viewer').addEventListener('touchend', e => {
+  if (vsw === null) return;
+  const dx = e.changedTouches[0].clientX - vsw; vsw = null;
+  if (Math.abs(dx) > 50) stepViewer(dx < 0 ? 1 : -1);
+}, { passive: true });
+
 /* ---------- task editor ---------- */
 function movesHTML(t) {
   let base = parseISO(ui.weekStart);
@@ -1434,6 +1657,8 @@ function buildWhere(cur) {
 function openEditor(id) {
   const t = byId(id); if (!t) return;
   editingId = id;
+  edFiles = (t.files || []).slice(); edPending = 0;
+  renderEdFiles();
   $('#edTitle').value = t.title;
   $('#edNote').value = t.note || '';
   $('#edTime').value = t.time || '';
@@ -1500,6 +1725,7 @@ function applyEditor(moveTo) {
   if (where === 'custom') where = $('#edDate').value ? 'd:' + $('#edDate').value : t.where;
   if (!moveTo && where === t.where && where.startsWith('g:') && goal !== where.slice(2)) where = goal ? 'g:' + goal : 'someday';
   t.goal = where.startsWith('g:') ? where.slice(2) : goal;
+  t.files = edFiles.slice();
   if (moveTo) snap();
   if (where !== t.where) insertInto(t, where);
   save();
@@ -1622,11 +1848,16 @@ $('#setClose').addEventListener('click', () => $('#settings').close());
     save(); render();
   });
 });
-$('#exportBtn').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+$('#exportBtn').addEventListener('click', async () => {
+  const files = {};
+  for (const id of new Set(db.tasks.flatMap(t => (t.files || []).map(f => f.id)))) {
+    const r = await fileStore.get(id).catch(() => null);
+    if (r) files[id] = { full: await blobToData(r.full), thumb: await blobToData(r.thumb), w: r.w, h: r.h };
+  }
+  const blob = new Blob([JSON.stringify({ ...db, files })], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `tydzen-${iso(today0())}.json`;
+  a.download = `shuflyadka-${iso(today0())}.json`;
   document.body.append(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 });
@@ -1638,6 +1869,12 @@ $('#importFile').addEventListener('change', async e => {
   try {
     const data = JSON.parse(await f.text());
     if (!data || !Array.isArray(data.tasks)) throw new Error('bad');
+    for (const [id, f] of Object.entries(data.files || {})) {
+      const blob = async d => (await fetch(d)).blob();
+      await fileStore.put({ id, full: await blob(f.full), thumb: await blob(f.thumb), w: f.w, h: f.h }).catch(() => {});
+      urlCache.delete(id);
+    }
+    delete data.files;
     snap();
     db = data; normalize(); save(); fillSettings(); render();
     toast(`Загружана: ${sprav(db.tasks.length)}`, true);
@@ -1746,15 +1983,20 @@ setInterval(() => {
 }, 60000);
 
 // header / tab bar heights for full-height layouts
-const setH = () => {
-  document.documentElement.style.setProperty('--hh', $('.top').offsetHeight + 'px');
-  document.documentElement.style.setProperty('--tb', $('#tabbar').offsetHeight + 'px');
+// applied on the next frame and only when changed, so the observer never loops
+const sizes = { hh: -1, tb: -1 };
+const applyH = () => {
+  const hh = $('.top').offsetHeight, tb = $('#tabbar').offsetHeight, root = document.documentElement.style;
+  if (hh !== sizes.hh) { sizes.hh = hh; root.setProperty('--hh', hh + 'px'); }
+  if (tb !== sizes.tb) { sizes.tb = tb; root.setProperty('--tb', tb + 'px'); }
 };
-const ro = new ResizeObserver(setH);
+let hRaf = 0;
+const ro = new ResizeObserver(() => { cancelAnimationFrame(hRaf); hRaf = requestAnimationFrame(applyH); });
 ro.observe($('.top')); ro.observe($('#tabbar'));
-setH();
+applyH();
 
 render();
+setTimeout(gcFiles, 4000);
 if (!window.Sortable) toast('Перацягванне не загрузілася (няма інтэрнэту?). Пераносіць можна праз картку справы.');
 })();
 </script>

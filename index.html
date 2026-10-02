@@ -454,6 +454,15 @@ dialog::backdrop{background:rgba(20,24,36,.38);backdrop-filter:blur(2px);-webkit
 .ed-foot{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .hint{font-size:13.5px;color:var(--ink-2);margin:0;line-height:1.45;max-width:60ch}
 .lbl-dot{display:inline-flex;align-items:center;gap:6px}
+.syncbody{display:flex;flex-direction:column;gap:10px}
+.sync-row{display:flex;gap:8px}
+.sync-row input{flex:1}
+.syncbody .small{font-size:12.5px;color:var(--ink-3)}
+.syncbody a.linkbtn{align-self:flex-start}
+.sync.is-ok{color:var(--blue)}
+.sync.is-busy svg{animation:breathe .7s ease-in-out infinite alternate}
+.sync.is-err{color:var(--pink);border-color:var(--pink)}
+.sync.is-off{opacity:.45}
 .moves{display:flex;flex-wrap:wrap;gap:6px}
 .mv{
   border:1.5px solid var(--line-2);background:transparent;border-radius:10px;padding:4px 0 5px;min-width:42px;
@@ -482,9 +491,9 @@ dialog::backdrop{background:rgba(20,24,36,.38);backdrop-filter:blur(2px);-webkit
   .top .grow{display:none}
   .brand{order:0;margin-right:auto;font-size:19px}
   body[data-view="week"] .brand,body[data-view="backlog"] .brand{display:none}
-  .weeknav{order:1;flex:1 1 calc(100% - 50px);min-width:0}
+  .weeknav{order:1;flex:1 1 calc(100% - 94px);min-width:0}
   .range{min-width:0;flex:1}
-  #settingsBtn{order:2}
+  #syncBtn,#settingsBtn{order:2}
   #mvariant{order:3}
   #people{order:4}
   #rollBtn{order:5;width:100%}
@@ -528,6 +537,7 @@ dialog::backdrop{background:rgba(20,24,36,.38);backdrop-filter:blur(2px);-webkit
   .ed{padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
 }
 @media (max-width: 420px){
+  #weekProg{display:none}
   .seg button{padding:6px 8px;font-size:13px}
   .range strong{font-size:15px}
   .row{grid-template-columns:1fr}
@@ -565,6 +575,9 @@ dialog::backdrop{background:rgba(20,24,36,.38);backdrop-filter:blur(2px);-webkit
     <button type="button" data-mv="list">Спісам</button>
   </div>
   <div class="seg" id="people" role="group" aria-label="Чые справы паказваць"></div>
+  <button class="iconbtn sync" id="syncBtn" type="button" hidden aria-label="Агульная шуфлядка">
+    <svg width="18" height="14" viewBox="0 0 18 14" aria-hidden="true"><path d="M5 12.5h8.3a3.3 3.3 0 0 0 .4-6.6A4.7 4.7 0 0 0 4.7 5 3.8 3.8 0 0 0 5 12.5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+  </button>
   <button class="iconbtn" id="settingsBtn" type="button" aria-label="Налады">
     <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4.5h6.5M12.5 4.5H14M2 11.5h1.5M7.5 11.5H14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="10.5" cy="4.5" r="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="5.5" cy="11.5" r="1.8" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
   </button>
@@ -651,7 +664,7 @@ dialog::backdrop{background:rgba(20,24,36,.38);backdrop-filter:blur(2px);-webkit
       <div class="catlist" id="catList"></div>
       <div><button type="button" class="btn" id="catAdd">+ Новая катэгорыя</button></div>
     </fieldset>
-    <p class="hint">Пакуль усё захоўваецца толькі ў гэтым браўзеры. Агульная сінхранізацыя на два тэлефоны будзе наступным крокам, а да таго часу можна перакідваць копію файлам.</p>
+    <fieldset class="field"><legend>Агульная шуфлядка</legend><div id="syncBody" class="syncbody"></div></fieldset>
     <div class="ed-foot">
       <button type="button" class="btn" id="exportBtn">Спампаваць копію</button>
       <button type="button" class="btn" id="importBtn">Загрузіць копію</button>
@@ -739,7 +752,39 @@ const I = {
 
 /* ---------- storage ---------- */
 function load() { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { return null; } }
-function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {} }
+function persist() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {} }
+function save() { markChanges(); persist(); scheduleSync(); }
+
+// every task / dream / category carries "u" (last change time) and deletions leave a tombstone,
+// so two devices can be merged item by item instead of one overwriting the other
+const stamps = new Map();
+const KINDS = [['task', 'tasks'], ['dream', 'dreams'], ['cat', 'cats']];
+const bare = x => { const { u, ...rest } = x; return JSON.stringify(rest); };
+function primeStamps() {
+  stamps.clear();
+  for (const [k, f] of KINDS) for (const x of db[f]) stamps.set(`${k}:${x.id}`, bare(x));
+  stamps.set('people', JSON.stringify(db.people));
+}
+function markChanges() {
+  const now = Date.now(), seen = new Set();
+  db.deleted = db.deleted || {};
+  for (const [k, f] of KINDS) for (const x of db[f]) {
+    const key = `${k}:${x.id}`, j = bare(x);
+    seen.add(key);
+    if (db.deleted[key]) { delete db.deleted[key]; x.u = now; }
+    else if (stamps.get(key) !== j) x.u = now;
+    stamps.set(key, j);
+  }
+  for (const key of [...stamps.keys()]) if (key !== 'people' && !seen.has(key)) { db.deleted[key] = now; stamps.delete(key); }
+  const pj = JSON.stringify(db.people);
+  if (stamps.get('people') !== pj) { db.peopleU = now; stamps.set('people', pj); }
+}
+
+const SYNCKEY = 'shuflyadka.sync';
+let syncCfg = (() => { try { return JSON.parse(localStorage.getItem(SYNCKEY) || 'null'); } catch { return null; } })();
+const saveSyncCfg = () => { try { syncCfg ? localStorage.setItem(SYNCKEY, JSON.stringify(syncCfg)) : localStorage.removeItem(SYNCKEY); } catch {} };
+let syncTimer = 0;
+function scheduleSync(ms = 1500) { if (!syncCfg?.data) return; clearTimeout(syncTimer); syncTimer = setTimeout(() => sync(), ms); }
 function loadUI() { try { return JSON.parse(localStorage.getItem(UIKEY) || '{}'); } catch { return {}; } }
 function saveUI() { try { const { weekStart, mday, ...rest } = ui; localStorage.setItem(UIKEY, JSON.stringify(rest)); } catch {} }
 
@@ -831,13 +876,16 @@ function normalize() {
     if (typeof t.ord !== 'number') t.ord = 0;
     if (!Array.isArray(t.files)) t.files = [];
   });
+  if (!db.deleted || typeof db.deleted !== 'object') db.deleted = {};
   db.v = 3;
 }
 
 /* ---------- state ---------- */
 let db = load();
-if (!db || !Array.isArray(db.tasks)) { db = seed(); save(); }
+if (!db || !Array.isArray(db.tasks)) { db = seed(); }
 normalize();
+primeStamps();
+persist();
 
 const ui = Object.assign(
   { view: 'week', who: 'all', mweek: 'day', open: { next: true, mcur: true, mnext: true, later: false, someday: false } },
@@ -1798,7 +1846,7 @@ $('#drDelete').addEventListener('click', () => {
 $$('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
 
 /* ---------- settings ---------- */
-function fillSettings() { $('#nameA').value = db.people.a.name; $('#nameB').value = db.people.b.name; renderCatList(); }
+function fillSettings() { $('#nameA').value = db.people.a.name; $('#nameB').value = db.people.b.name; renderCatList(); renderSyncBox(); }
 let openPalette = null;
 function renderCatList() {
   $('#catList').innerHTML = db.cats.map(c => {
@@ -1965,11 +2013,266 @@ document.addEventListener('keydown', e => {
   else if (e.key === 'ArrowRight') step(1);
 });
 
+/* ---------- sync through a secret GitHub gist ---------- */
+const DATA_FILE = 'shuflyadka.json';
+let syncing = false, syncAgain = false, etag = null, lastRemote = null, syncState = 'idle', lastSyncAt = 0;
+const photoFail = new Map();
+const emptyRemote = () => ({ tasks: [], dreams: [], cats: [], deleted: {} });
+const deep = x => JSON.parse(JSON.stringify(x));
+const snapshot = () => ({ v: 3, people: db.people, peopleU: db.peopleU || 0, cats: db.cats, tasks: db.tasks, dreams: db.dreams, deleted: db.deleted || {} });
+const byIdCmp = (a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+const canon = d => JSON.stringify([d.people || null, d.peopleU || 0,
+  [...(d.cats || [])].sort(byIdCmp), [...(d.tasks || [])].sort(byIdCmp), [...(d.dreams || [])].sort(byIdCmp),
+  Object.keys(d.deleted || {}).sort().map(k => [k, d.deleted[k]])]);
+
+async function gh(method, path, body, headers = {}) {
+  const res = await fetch('https://api.github.com' + path, {
+    method, cache: 'no-store',
+    headers: { Authorization: `Bearer ${syncCfg.token}`, Accept: 'application/vnd.github+json', ...(body ? { 'Content-Type': 'application/json' } : {}), ...headers },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (res.status === 304) return { status: 304 };
+  if (!res.ok) { const e = new Error(`GitHub ${res.status}`); e.status = res.status; throw e; }
+  return { status: res.status, etag: res.headers.get('ETag'), json: await res.json() };
+}
+async function pullRemote() {
+  const r = await gh('GET', `/gists/${syncCfg.data}`, null, etag ? { 'If-None-Match': etag } : {});
+  if (r.status === 304) { if (lastRemote) return null; etag = null; return pullRemote(); }
+  etag = r.etag;
+  const f = r.json.files?.[DATA_FILE];
+  if (!f) return emptyRemote();
+  return JSON.parse(f.truncated ? await (await fetch(f.raw_url, { cache: 'no-store' })).text() : f.content);
+}
+// item by item: the newer change wins, deletions win over older edits
+function mergeData(L, R) {
+  const del = { ...(R.deleted || {}) };
+  for (const [k, v] of Object.entries(L.deleted || {})) if (!(del[k] >= v)) del[k] = v;
+  const cutoff = Date.now() - 90 * 864e5;
+  for (const k of Object.keys(del)) if (del[k] < cutoff) delete del[k];
+  const pick = (kind, la = [], ra = []) => {
+    const m = new Map(ra.map(x => [x.id, x]));
+    for (const x of la) { const r = m.get(x.id); if (!r || (x.u || 0) >= (r.u || 0)) m.set(x.id, x); }
+    const out = [], seen = new Set();
+    for (const id of [...la.map(x => x.id), ...ra.map(x => x.id)]) {
+      if (seen.has(id)) continue; seen.add(id);
+      const x = m.get(id), d = del[`${kind}:${id}`];
+      if (d && d >= (x.u || 0)) continue;
+      out.push(x);
+    }
+    return out;
+  };
+  const localPeople = (L.peopleU || 0) >= (R.peopleU || 0) || !R.people;
+  return {
+    v: 3, people: localPeople ? L.people : R.people, peopleU: Math.max(L.peopleU || 0, R.peopleU || 0),
+    cats: pick('cat', L.cats, R.cats), tasks: pick('task', L.tasks, R.tasks), dreams: pick('dream', L.dreams, R.dreams), deleted: del,
+  };
+}
+function applyRemote(M) {
+  if (M.people) db.people = M.people;
+  db.peopleU = M.peopleU || 0;
+  db.cats = M.cats || []; db.tasks = M.tasks || []; db.dreams = M.dreams || []; db.deleted = M.deleted || {};
+  normalize(); primeStamps(); persist();
+  if ($('#settings').open) fillSettings();
+  render();
+}
+function setSyncState(st) {
+  syncState = st;
+  const b = $('#syncBtn');
+  b.hidden = !syncCfg?.data;
+  b.className = `iconbtn sync is-${st}`;
+  b.title = syncStatusText();
+  const s = $('#syncStatus'); if (s) s.textContent = syncStatusText();
+}
+function syncStatusText() {
+  if (syncState === 'busy') return 'Сінхранізую…';
+  if (syncState === 'err') return 'Не атрымалася дастукацца да GitHub, паспрабую яшчэ.';
+  if (syncState === 'off') return 'Няма інтэрнэту, змены адпраўлю пазней.';
+  if (lastSyncAt) { const d = new Date(lastSyncAt); return `Апошняя сінхранізацыя ў ${pad(d.getHours())}:${pad(d.getMinutes())}.`; }
+  return '';
+}
+async function sync() {
+  if (!syncCfg?.data) return;
+  if (syncing || dragging) { syncAgain = true; return; }
+  if (!navigator.onLine) return setSyncState('off');
+  syncing = true; setSyncState('busy');
+  try {
+    const remote = await pullRemote();
+    const base = remote || lastRemote || emptyRemote();
+    const local = snapshot();
+    const merged = mergeData(local, base);
+    if (canon(merged) !== canon(local)) {
+      applyRemote(merged);
+      if (remote) toast('Падцягнуў змены з другой прылады');
+    }
+    const out = deep(snapshot());
+    if (canon(out) !== canon(base)) {
+      await gh('PATCH', `/gists/${syncCfg.data}`, { files: { [DATA_FILE]: { content: JSON.stringify(out) } } });
+      etag = null;
+    }
+    lastRemote = out;
+    lastSyncAt = Date.now();
+    setSyncState('ok');
+    syncPhotos();
+  } catch (e) {
+    setSyncState(navigator.onLine ? 'err' : 'off');
+    if (e.status === 401) toast('GitHub больш не прымае токен. Падключыце шуфлядку нанова ў наладах.');
+  } finally {
+    syncing = false;
+    if (syncAgain) { syncAgain = false; scheduleSync(800); }
+  }
+}
+
+// photos: uploaded in small batches into separate secret gists, the task remembers which gist holds each one
+let photoBusy = false;
+async function syncPhotos() {
+  if (photoBusy || !syncCfg?.data) return;
+  photoBusy = true;
+  try { await uploadPhotos(); await downloadPhotos(); } catch {} finally { photoBusy = false; }
+}
+async function uploadPhotos() {
+  const pending = [];
+  for (const t of db.tasks) for (const f of t.files || []) if (!f.g && !pending.includes(f.id)) pending.push(f.id);
+  let changed = false;
+  for (const id of pending.slice(0, 4)) {
+    const r = await fileStore.get(id).catch(() => null);
+    if (!r) continue; // lives on the other device, it will upload it
+    const name = `p-${id}.json`;
+    const content = JSON.stringify({ w: r.w, h: r.h, full: await blobToData(r.full), thumb: await blobToData(r.thumb) });
+    let gid;
+    if (syncCfg.batch && syncCfg.batch.n < 6) {
+      await gh('PATCH', `/gists/${syncCfg.batch.id}`, { files: { [name]: { content } } });
+      gid = syncCfg.batch.id; syncCfg.batch.n++;
+    } else {
+      const c = await gh('POST', '/gists', { description: 'Шуфлядка: фота', public: false, files: { [name]: { content } } });
+      gid = c.json.id; syncCfg.batch = { id: gid, n: 1 };
+    }
+    saveSyncCfg();
+    for (const t of db.tasks) for (const f of t.files || []) if (f.id === id) f.g = gid;
+    changed = true;
+  }
+  if (changed) save();
+}
+async function downloadPhotos() {
+  const want = new Map();
+  for (const t of db.tasks) for (const f of t.files || []) {
+    if (!f.g || urlCache.has(f.id) || (photoFail.get(f.id) || 0) > Date.now() - 60000) continue;
+    if (!want.has(f.g)) want.set(f.g, new Set());
+    want.get(f.g).add(f.id);
+  }
+  let got = false;
+  for (const [g, ids] of want) {
+    const missing = [];
+    for (const id of ids) if (!(await fileStore.get(id).catch(() => null))) missing.push(id);
+    if (!missing.length) continue;
+    try {
+      const r = await gh('GET', `/gists/${g}`);
+      for (const id of missing) {
+        const f = r.json.files?.[`p-${id}.json`];
+        if (!f) { photoFail.set(id, Date.now()); continue; }
+        const j = JSON.parse(f.truncated ? await (await fetch(f.raw_url, { cache: 'no-store' })).text() : f.content);
+        const toBlob = async d => (await fetch(d)).blob();
+        await fileStore.put({ id, full: await toBlob(j.full), thumb: await toBlob(j.thumb), w: j.w, h: j.h });
+        got = true;
+      }
+    } catch { missing.forEach(id => photoFail.set(id, Date.now())); }
+  }
+  if (got && !dragging) render();
+}
+
+// first device: check the token, create the gist with what is here now
+async function connectSync(token) {
+  token = (token || '').trim();
+  if (!token) return toast('Устаўце токен з GitHub');
+  const prev = syncCfg;
+  syncCfg = { token };
+  try {
+    const me = await gh('GET', '/user');
+    markChanges(); persist();
+    const out = deep(snapshot());
+    const c = await gh('POST', '/gists', { description: 'Шуфлядка: агульныя справы', public: false, files: { [DATA_FILE]: { content: JSON.stringify(out) } } });
+    syncCfg = { token, data: c.json.id, owner: me.json.login, batch: null };
+    saveSyncCfg();
+    lastRemote = out; etag = null; lastSyncAt = Date.now();
+    setSyncState('ok'); renderSyncBox();
+    toast('Падключана! Цяпер дашліце спасылку на другую прыладу.');
+    syncPhotos();
+  } catch (e) {
+    syncCfg = prev;
+    toast(e.status === 401 ? 'GitHub не прыняў токен. Праверце, ці ён скапіяваўся цалкам.'
+      : (e.status === 403 || e.status === 404) ? 'Токену не хапае права gist.' : 'Не атрымалася падключыцца. Праверце інтэрнэт.');
+  }
+}
+const b64url = s => btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64url = s => atob(s.replace(/-/g, '+').replace(/_/g, '/'));
+const joinLink = () => `${location.origin}${location.pathname}#join=${b64url(JSON.stringify({ t: syncCfg.token, d: syncCfg.data, o: syncCfg.owner }))}`;
+
+// second device: opened the link from the first one
+async function joinFromHash() {
+  const m = location.hash.match(/^#join=([\w-]+)/);
+  if (!m) return;
+  history.replaceState(null, '', location.pathname + location.search);
+  let cfg = null;
+  try { cfg = JSON.parse(unb64url(m[1])); } catch {}
+  if (!cfg?.t || !cfg?.d) return toast('Спасылка пашкоджаная');
+  if (syncCfg?.data === cfg.d) return toast('Гэтая прылада ўжо ў агульнай шуфлядцы');
+  if (!confirm('Падключыць гэтую прыладу да агульнай Шуфлядкі?\nСправы, якія зараз ляжаць на гэтай прыладзе, заменяцца агульнымі.')) return;
+  const prev = syncCfg;
+  syncCfg = { token: cfg.t, data: cfg.d, owner: cfg.o, batch: null };
+  try {
+    etag = null; lastRemote = null;
+    const remote = await pullRemote();
+    applyRemote({ ...emptyRemote(), ...remote });
+    lastRemote = deep(snapshot());
+    saveSyncCfg(); lastSyncAt = Date.now(); setSyncState('ok');
+    toast('Гатова, вы ў агульнай Шуфлядцы!');
+    syncPhotos();
+  } catch {
+    syncCfg = prev;
+    toast('Не атрымалася падключыцца па спасылцы');
+  }
+}
+
+function renderSyncBox() {
+  const b = $('#syncBody');
+  if (!syncCfg?.data) {
+    b.innerHTML = `<p class="hint">Каб бачыць адны і тыя ж справы на дзвюх прыладах, Шуфлядка можа захоўваць іх у сакрэтным gist на GitHub. Без гэтага ўсё ляжыць толькі ў гэтым браўзеры.</p>`
+      + `<div class="sync-row"><input id="syncToken" type="password" placeholder="GitHub токен з правам gist" autocomplete="off" spellcheck="false" aria-label="GitHub токен"><button type="button" class="btn btn-primary" id="syncConnect">Падключыць</button></div>`
+      + `<a class="linkbtn" href="https://github.com/settings/tokens/new?scopes=gist&description=Shuflyadka" target="_blank" rel="noopener">Стварыць токен на GitHub</a>`;
+  } else {
+    b.innerHTML = `<p class="hint">Падключана да GitHub <b>${esc(syncCfg.owner || '')}</b>. <span id="syncStatus">${esc(syncStatusText())}</span></p>`
+      + `<div class="ed-foot"><button type="button" class="btn btn-primary" id="syncShare">Спасылка для другой прылады</button><button type="button" class="btn" id="syncNow">Сінхранізаваць</button><button type="button" class="btn btn-danger" id="syncOff">Адключыць</button></div>`
+      + `<input id="syncLink" readonly hidden aria-label="Спасылка для другой прылады">`
+      + `<p class="small">У спасылцы схаваны ключ доступу, таму дасылайце яе толькі ў асабісты чат.</p>`;
+  }
+}
+$('#syncBody').addEventListener('click', async e => {
+  const id = e.target.closest('button')?.id;
+  if (id === 'syncConnect') connectSync($('#syncToken').value);
+  else if (id === 'syncNow') sync();
+  else if (id === 'syncOff') {
+    if (!confirm('Адключыць гэтую прыладу ад агульнай шуфлядкі? Справы застануцца тут, але перастануць сінхранізавацца.')) return;
+    syncCfg = null; saveSyncCfg(); lastRemote = null; etag = null; setSyncState('idle'); renderSyncBox();
+  } else if (id === 'syncShare') {
+    const link = joinLink(), inp = $('#syncLink');
+    inp.value = link; inp.hidden = false; inp.select();
+    try {
+      if (navigator.share && matchMedia('(hover: none)').matches) await navigator.share({ title: 'Шуфлядка', url: link });
+      else { await navigator.clipboard.writeText(link); toast('Спасылка скапіявана'); }
+    } catch {}
+  }
+});
+$('#syncBody').addEventListener('keydown', e => { if (e.target.id === 'syncToken' && e.key === 'Enter') { e.preventDefault(); connectSync(e.target.value); } });
+$('#syncBtn').addEventListener('click', () => { fillSettings(); $('#settings').showModal(); });
+
+setInterval(() => { if (syncCfg?.data && document.visibilityState === 'visible') sync(); }, 20000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') sync(); });
+window.addEventListener('online', () => sync());
+
 // another tab changed the data
 window.addEventListener('storage', e => {
   if (e.key !== KEY || dragging) return;
   const fresh = load();
-  if (fresh && Array.isArray(fresh.tasks)) { db = fresh; normalize(); render(); }
+  if (fresh && Array.isArray(fresh.tasks)) { db = fresh; normalize(); primeStamps(); render(); }
 });
 
 // new day while the page is open
@@ -1997,6 +2300,8 @@ applyH();
 
 render();
 setTimeout(gcFiles, 4000);
+setSyncState('idle');
+joinFromHash().then(() => sync());
 if (!window.Sortable) toast('Перацягванне не загрузілася (няма інтэрнэту?). Пераносіць можна праз картку справы.');
 })();
 </script>

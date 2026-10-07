@@ -225,6 +225,59 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding:20px 0}
 @keyframes noodR{from{transform:rotate(-40deg)}to{transform:rotate(-70deg)}}
 @keyframes squash{from{transform:scale(1,1)}to{transform:scale(1.06,.94)}}
 
+/* dance 6: moonwalk */
+.d-moon .m-all{animation:moon 2.4s ease-in-out infinite}
+.d-moon .m-legL{animation:moonLeg .3s ease-in-out infinite alternate}
+.d-moon .m-legR{animation:moonLeg .3s ease-in-out infinite alternate-reverse}
+.d-moon .m-armL{animation:armSwing .6s ease-in-out infinite alternate}
+.d-moon .m-armR{animation:armSwingR .6s ease-in-out infinite alternate}
+.d-moon .m-head{transform:rotate(-8deg)}
+@keyframes moon{0%,100%{transform:translateX(0) scaleX(1)}45%{transform:translateX(-14px) scaleX(1)}50%{transform:translateX(-14px) scaleX(-1)}95%{transform:translateX(0) scaleX(-1)}}
+@keyframes moonLeg{from{transform:rotate(-20deg) translateY(-3px)}to{transform:rotate(8deg)}}
+@keyframes armSwing{from{transform:rotate(-10deg)}to{transform:rotate(35deg)}}
+@keyframes armSwingR{from{transform:rotate(10deg)}to{transform:rotate(-35deg)}}
+
+/* dance 7: helicopter arms */
+.d-heli .m-armL{animation:heli .45s linear infinite}
+.d-heli .m-armR{animation:heliR .45s linear infinite}
+.d-heli .m-all{animation:heliUp 1.8s ease-in-out infinite}
+.d-heli .m-shadow{animation:shad 1.8s ease-in-out infinite}
+.d-heli .m-legL,.d-heli .m-legR{animation:dangle .9s ease-in-out infinite alternate}
+@keyframes heli{to{transform:rotate(360deg)}}
+@keyframes heliR{to{transform:rotate(-360deg)}}
+@keyframes heliUp{0%,100%{transform:translateY(0)}50%{transform:translateY(-20px) rotate(4deg)}}
+@keyframes dangle{from{transform:rotate(-15deg)}to{transform:rotate(15deg)}}
+
+/* dance 8: disco point */
+.d-disco .m-armL{animation:discoL 1s steps(1) infinite}
+.d-disco .m-armR{animation:discoR 1s steps(1) infinite}
+.d-disco .m-body{animation:hips .5s ease-in-out infinite alternate}
+.d-disco .m-head{animation:discoHead 1s steps(1) infinite}
+.d-disco .m-legL{animation:kick .5s ease-in-out infinite alternate}
+@keyframes discoL{0%{transform:rotate(150deg)}50%{transform:rotate(-20deg)}}
+@keyframes discoR{0%{transform:rotate(20deg)}50%{transform:rotate(-150deg)}}
+@keyframes discoHead{0%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}
+@keyframes hips{from{transform:translateX(-4px) rotate(-6deg)}to{transform:translateX(4px) rotate(6deg)}}
+
+/* dance 9: headbang */
+.d-bang .m-head{animation:bang .28s ease-in infinite alternate}
+.d-bang .m-armL{animation:rockL .28s ease-in infinite alternate}
+.d-bang .m-armR{animation:rockR .56s ease-in-out infinite alternate}
+.d-bang .m-all{animation:squash .28s ease-in infinite alternate}
+@keyframes bang{from{transform:rotate(-6deg) translateY(-2px)}to{transform:rotate(18deg) translateY(6px)}}
+@keyframes rockL{from{transform:rotate(100deg)}to{transform:rotate(140deg)}}
+@keyframes rockR{from{transform:rotate(-30deg)}to{transform:rotate(-80deg)}}
+
+/* dance 10: glitchy teleport */
+svg.d-glitch{animation:glitchF 1.2s steps(1) infinite}
+.d-glitch .m-all{animation:glitch 1.2s steps(1) infinite}
+.d-glitch .m-head{animation:glitchH .6s steps(1) infinite}
+.d-glitch .m-armL{animation:robArmL .6s steps(4) infinite}
+.d-glitch .m-armR{animation:robArmR .6s steps(4) infinite}
+@keyframes glitch{0%{transform:none;opacity:1}10%{transform:translate(-6px,2px) skewX(12deg);opacity:.6}20%{transform:translate(5px,-3px);opacity:1}30%{transform:none}55%{transform:translate(0,-10px) scale(1.08,.9);opacity:.4}60%{transform:none;opacity:1}80%{transform:translate(8px,0) skewX(-14deg)}90%{transform:none}}
+@keyframes glitchH{0%{transform:none}25%{transform:translateX(5px)}50%{transform:translateX(-5px) rotate(-8deg)}75%{transform:translateY(-4px)}}
+@keyframes glitchF{0%{filter:none}10%{filter:hue-rotate(90deg) saturate(2)}20%{filter:none}55%{filter:hue-rotate(200deg)}60%{filter:none}80%{filter:hue-rotate(-90deg) contrast(1.5)}90%{filter:none}}
+
 .mascot.boing svg{animation:boing .5s cubic-bezier(.3,1.6,.5,1)}
 @keyframes boing{0%{transform:scale(1)}30%{transform:scale(.85,1.15)}60%{transform:scale(1.1,.9)}100%{transform:scale(1)}}
 
@@ -809,9 +862,15 @@ view.addEventListener('touchend', e => {
 function applyTheme() { const th = S.settings.theme; th ? document.documentElement.setAttribute('data-theme', th) : document.documentElement.removeAttribute('data-theme'); }
 /* ---------- mascot ---------- */
 const mEl = document.getElementById('mascot'), mSvg = document.getElementById('mSvg'), mBub = document.getElementById('mBubble');
-const DANCES = ['d-wiggle', 'd-robot', 'd-spin', 'd-float', 'd-shimmy'];
-const PHRASES = ['уабулабудуптуп!', 'блып-блоп 👽', 'зуруру-зуруру~', 'кап-кап-капшук!', 'ыыыы-бзынь ✨', 'трынды-брынды', 'пупупу-пу-пуу', 'бадабум-тыц!', 'вжух-вжух 🛸', 'мнямс-крона', 'шлёп-шлёп-шлёп', 'ііііха-бульк'];
-const SAD = ['ой-ёй… бжжж', 'капшук пусты-ы-ы 🥲', 'вуу-вуу… перабор'];
+const DANCES = ['d-wiggle', 'd-robot', 'd-spin', 'd-float', 'd-shimmy', 'd-moon', 'd-heli', 'd-disco', 'd-bang', 'd-glitch'];
+const PHRASES = [
+  'гаманець, гаманееееець!', 'уабулабудуптуп!', 'гроші закінчуються, мілорде', 'дзинь-дзинь, монетки!',
+  'буль-буль-бюджет', 'я з планети Заощадження 🛸', 'пип-пип, рахую копієчки', 'хто з’їв усю зарплату?',
+  'танцюю, бо це безкоштовно', 'земляни, відкладайте!', 'кешбек прийде, я відчуваю', 'ой-йой, знову кава?',
+  'моя антена ловить знижки 📡', 'гаманчик мій пухкенький', 'бип-боп, план виконано',
+  '⟟⏃⋔ ⍜⟒⟒ ⌇⍜⋏', 'ꙮ ⨳ ⟁ ⍾ ⟟⟒!', '⏃⌰⟟⟒⋏ ⊑⟟⌇⌇ ✦', '◬⏚ ⋔⍜⋏⟒⊬ ◬', 'ჯ⟒⚲ ∰ ꕤ ⟟', '⌖⍙⎎ ⍜⍜⍜ ⏁⏁', '⋉⋊ ⟡ ⍝⍣⍤ !!',
+];
+const SAD = ['гроші закінчуються, мілорде 🥲', 'гаманець плаче…', 'перевитрата, Х’юстоне!', 'ой лишенько, ліміт!', '⍙⍙⍙… ⟒⟒⋏ 🥲'];
 let mDance = 0, mBubT = 0;
 function mascotShow() { mEl.style.display = S.settings.mascot === false ? 'none' : ''; }
 function mascotDance(i) { mDance = i ?? (mDance + 1 + Math.floor(Math.random() * (DANCES.length - 1))) % DANCES.length; mSvg.setAttribute('class', DANCES[mDance]); }

@@ -197,7 +197,8 @@ button{cursor:pointer}
 .c-note{font-size:12.5px;color:var(--ink-2);margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:break-word}
 .c-meta{display:flex;align-items:center;gap:7px;margin-top:5px;font-size:12px;color:var(--ink-2);min-height:12px}
 .time{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink)}
-.cat-name{color:var(--ink-2)}
+.cemo{font-size:13px;line-height:1;display:inline-block}
+.saved-note{font-size:12.5px;color:var(--ink-3);min-width:70px;text-align:right}
 .has-note{display:inline-grid;color:var(--ink-3)}
 .has-photo{display:inline-flex;align-items:center;gap:2px;color:var(--ink-3);font-size:11.5px}
 
@@ -271,7 +272,7 @@ body.dragging,body.dragging *{cursor:grabbing !important}
 
 /* ---------- horizon ---------- */
 .hz{
-  display:grid;grid-template-columns:repeat(6,minmax(178px,1fr)) minmax(280px,1.35fr);
+  display:grid;grid-template-columns:repeat(6,minmax(172px,1fr)) minmax(270px,1.3fr) minmax(270px,1.3fr);
   height:calc(100dvh - var(--hh,64px));overflow-x:auto;
 }
 .hcol{display:flex;flex-direction:column;gap:10px;padding:20px 14px 36px;border-right:1px solid var(--line);overflow-y:auto;min-width:0}
@@ -303,6 +304,15 @@ body.dragging,body.dragging *{cursor:grabbing !important}
 .hcol.dreams{background-image:radial-gradient(var(--halftone-pink) 1.1px, transparent 1.5px);background-size:8px 8px}
 .dream-list{display:flex;flex-direction:column;gap:14px}
 .dream{background:var(--slip);border:1px solid var(--line-2);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.hcol.lists{background-image:radial-gradient(var(--halftone) 1.1px, transparent 1.5px);background-size:8px 8px}
+.lcount{
+  width:44px;height:44px;flex:none;border:0;padding:0;border-radius:11px;background:var(--dc);color:#fff;
+  font-family:var(--display);font-size:20px;line-height:1;display:grid;place-items:center;box-shadow:2px 2px 0 color-mix(in srgb, var(--ink) 25%, transparent);
+}
+.sugg{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 4px}
+.sugg-btn{border:1.5px dashed var(--line-2);background:transparent;border-radius:999px;padding:5px 10px;font-size:13px;color:var(--ink-2)}
+.sugg-btn:hover{border-color:var(--ink);color:var(--ink)}
+.side .sugg{margin:8px 0 6px}
 .dream-top{display:flex;gap:12px;align-items:center}
 .ring{
   width:46px;height:46px;border-radius:50%;flex:none;padding:0;border:0;
@@ -361,7 +371,7 @@ body.dragging,body.dragging *{cursor:grabbing !important}
 .drow.open .drow-body{display:block}
 .dlist{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:2px 18px}
 .ditem{
-  all:unset;box-sizing:border-box;display:grid;grid-template-columns:44px 13px minmax(0,1fr) auto;gap:8px;align-items:center;
+  all:unset;box-sizing:border-box;display:grid;grid-template-columns:44px 18px minmax(0,1fr) auto;gap:8px;align-items:center;
   width:100%;padding:6px 4px;border-radius:6px;font-size:14px;cursor:pointer;
 }
 .ditem:hover{background:var(--slip)}
@@ -432,6 +442,8 @@ dialog::backdrop{background:rgba(20,24,36,.38);backdrop-filter:blur(2px);-webkit
 .choice label{position:relative}
 .choice input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}
 .choice label > span{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;border:1.5px solid var(--line-2);font-size:13.5px;color:var(--ink)}
+.choice .emo-chip > span{font-size:18px;line-height:1.1;padding:5px 10px}
+.choice .emo-chip input:checked + span{background:color-mix(in srgb, var(--ink) 12%, transparent);color:var(--ink)}
 .choice input:checked + span{border-color:var(--ink);background:var(--ink);color:var(--slip)}
 .choice input:focus-visible + span{outline:2px solid var(--blue);outline-offset:2px}
 .swatch{width:10px;height:10px;border-radius:2px;background:var(--c)}
@@ -439,7 +451,8 @@ dialog::backdrop{background:rgba(20,24,36,.38);backdrop-filter:blur(2px);-webkit
 .newcat:hover{border-color:var(--ink);color:var(--ink)}
 .choice .newcat-in{width:150px;font-size:13.5px;padding:6px 11px;border-radius:999px;border:1.5px solid var(--blue);background:var(--paper);color:var(--ink)}
 .catlist{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
-.catrow{display:grid;grid-template-columns:26px minmax(0,1fr) 26px 28px;gap:8px;align-items:center}
+.catrow{display:grid;grid-template-columns:26px 46px minmax(0,1fr) 26px 28px;gap:8px;align-items:center}
+.field .catemo{padding:5px 0;text-align:center;font-size:18px}
 .catsw{width:26px;height:26px;border-radius:7px;border:0;padding:0;background:var(--c);mix-blend-mode:var(--blend)}
 .catsw[aria-expanded="true"]{outline:2px solid var(--ink);outline-offset:2px}
 .field .catname{padding:6px 9px}
@@ -617,13 +630,13 @@ dialog::backdrop{background:rgba(20,24,36,.38);backdrop-filter:blur(2px);-webkit
     <label class="field" id="edDateWrap" hidden>Дата<input id="edDate" type="date"></label>
     <fieldset class="field"><legend>Хто</legend><div class="choice" id="edWho"></div></fieldset>
     <fieldset class="field"><legend>Катэгорыя</legend><div class="choice" id="edCat"></div></fieldset>
-    <label class="field">Крок да мары<select id="edGoal"></select></label>
+    <label class="field">Мара або спіс<select id="edGoal"></select></label>
     <label class="donebox"><input type="checkbox" id="edDone"> Зроблена</label>
     <div class="ed-foot">
       <button type="button" class="btn btn-danger" id="edDelete">Выдаліць</button>
       <span class="grow"></span>
-      <button type="button" class="btn" id="edCancel">Скасаваць</button>
-      <button type="submit" class="btn btn-primary">Захаваць</button>
+      <span class="saved-note" id="edSaved" aria-live="polite"></span>
+      <button type="submit" class="btn btn-primary">Гатова</button>
     </div>
   </form>
 </dialog>
@@ -637,7 +650,7 @@ dialog::backdrop{background:rgba(20,24,36,.38);backdrop-filter:blur(2px);-webkit
       <button type="button" class="btn btn-danger" id="drDelete">Выдаліць</button>
       <span class="grow"></span>
       <button type="button" class="btn btn-hot" id="drAchieve">Здзейснена</button>
-      <button type="submit" class="btn btn-primary">Захаваць</button>
+      <button type="submit" class="btn btn-primary">Гатова</button>
     </div>
   </form>
 </dialog>
@@ -721,13 +734,17 @@ const MON_LOC = ['студзені','лютым','сакавіку','краса�
 const MON_SHORT = ['сту','лют','сак','кра','тра','чэр','ліп','жні','вер','кас','ліс','сне'];
 
 const DEFAULT_CATS = [
-  { id: 'home',    name: 'Дом',       color: '#00A95C' },
-  { id: 'errands', name: 'Справы',    color: '#FFB511' },
-  { id: 'fun',     name: 'Адпачынак', color: '#FF6C2F' },
-  { id: 'health',  name: 'Здароўе',   color: '#00838A' },
-  { id: 'trip',    name: 'Паездкі',   color: '#765BA7' },
-  { id: 'people',  name: 'Людзі',     color: '#F15060' },
+  { id: 'home',    name: 'Дом',       emoji: '🏠', color: '#00A95C' },
+  { id: 'errands', name: 'Справы',    emoji: '📌', color: '#FFB511' },
+  { id: 'fun',     name: 'Адпачынак', emoji: '🎉', color: '#FF6C2F' },
+  { id: 'health',  name: 'Здароўе',   emoji: '💪', color: '#00838A' },
+  { id: 'trip',    name: 'Паездкі',   emoji: '✈️', color: '#765BA7' },
+  { id: 'people',  name: 'Людзі',     emoji: '👥', color: '#F15060' },
 ];
+const DEFAULT_EMOJI = Object.fromEntries(DEFAULT_CATS.map(c => [c.id, c.emoji]));
+const EMOJI_RE = /^\s*(\p{Extended_Pictographic}(?:\uFE0F|\u200D\p{Extended_Pictographic}|[\u{1F3FB}-\u{1F3FF}])*)\s*/u;
+const splitEmoji = s => { s = String(s || ''); const m = s.match(EMOJI_RE); return m ? { emoji: m[1], rest: s.slice(m[0].length).trim() } : { emoji: '', rest: s.trim() }; };
+const firstGrapheme = s => { s = String(s || '').trim(); if (!s) return ''; return window.Intl?.Segmenter ? [...new Intl.Segmenter().segment(s)][0].segment : [...s][0]; };
 // extra quick-tag aliases for the built-in categories
 const CAT_KEYS = {
   home: ['дом','кват','хат','home'], errands: ['спр','пак','куп','err'], fun: ['адп','вес','кін','fun'],
@@ -798,7 +815,11 @@ function seed() {
     { id: uid(), title: 'Пабегчы 10 км разам', note: 'Да лета, спакойна і без траўмаў', color: '#00A95C', done: false, ord: 1 },
     { id: uid(), title: '20 новых страў за год', note: 'Кожны месяц нешта новае на кухні', color: '#FF6C2F', done: false, ord: 2 },
   ];
-  const [sea, run, food] = dreams.map(x => x.id);
+  dreams.push(
+    { id: uid(), title: '🎬 Фільмы', note: '', color: '#765BA7', done: false, ord: 3, endless: true },
+    { id: uid(), title: '✈️ Падарожжы', note: '', color: '#00838A', done: false, ord: 4, endless: true },
+  );
+  const [sea, run, food, films, trips] = dreams.map(x => x.id);
   const g = id => 'g:' + id;
   const rows = [
     // this week
@@ -828,6 +849,10 @@ function seed() {
     [g(run), 'Прабежка 5 км', 'health', 'ab', '', false, '', run],
     [g(run), 'Выбраць вясновы забег', 'health', 'ab', '', false, '', run],
     [g(food), 'Хлеб на заквасцы', 'home', 'b', '', false, '', food],
+    [g(films), 'Паразіты', 'fun', 'ab', '', false, '', films],
+    [g(films), 'Дзюна: частка другая', 'fun', 'ab', '', false, '', films],
+    [g(trips), 'Лісабон', 'trip', 'ab', '', false, '', trips],
+    [g(trips), 'Татры ўлетку', 'trip', 'ab', '', false, '', trips],
     // history
     [d(-7), 'Падоўжыць страхоўку', 'errands', 'a', '', true],
     [d(-6), 'Шакшука на сняданак', 'home', 'b', '', true, '', food],
@@ -860,6 +885,7 @@ function normalize() {
   if (!Array.isArray(db.dreams)) db.dreams = [];
   if (!Array.isArray(db.cats)) db.cats = DEFAULT_CATS.map(c => ({ ...c }));
   const catIds = new Set(db.cats.map(c => c.id));
+  db.cats.forEach(c => { if (!c.emoji) c.emoji = DEFAULT_EMOJI[c.id] || '🏷️'; });
   const cur = monthKey(today0()), nxt = monthKey(addMonths(today0(), 1));
   const dreamIds = new Set(db.dreams.map(x => x.id));
   db.tasks = db.tasks.filter(t => t && t.id && typeof t.where === 'string');
@@ -881,6 +907,7 @@ function normalize() {
 }
 
 /* ---------- state ---------- */
+try { const raw = localStorage.getItem(KEY); if (raw && !localStorage.getItem('tydzen.backup.v4')) localStorage.setItem('tydzen.backup.v4', raw); } catch {}
 let db = load();
 if (!db || !Array.isArray(db.tasks)) { db = seed(); }
 normalize();
@@ -929,6 +956,8 @@ function matchWho(w) {
   return '';
 }
 function matchCat(c) {
+  const byEmoji = db.cats.find(x => x.emoji && x.emoji === c);
+  if (byEmoji) return byEmoji.id;
   if (c.length < 2) return '';
   for (const cat of db.cats) {
     const n = cat.name.toLowerCase();
@@ -969,7 +998,7 @@ function whereLabel(where) {
     return diff === 0 ? 'на гэты тыдзень' : diff === 1 ? 'на наступны тыдзень' : `на тыдзень ${rangeLabel(ws, addDays(ws, 6))}`;
   }
   if (where.startsWith('m:')) return `на ${MON_NOM[+where.slice(7) - 1].toLowerCase()}`;
-  if (where.startsWith('g:')) return 'ў крокі мары';
+  if (where.startsWith('g:')) { const d = dreamById(where.slice(2)); return d?.endless ? `ў спіс «${d.title}»` : 'ў крокі мары'; }
   return where === 'later' ? 'ў «Пазней»' : 'ў «Калісьці»';
 }
 function overdue() {
@@ -989,11 +1018,11 @@ function cardHTML(t, o = {}) {
   const cls = ['card', t.done && 'is-done', c && 'has-cat', !visible(t) && 'is-hidden', t.id === flashId && 'pop']
     .filter(Boolean).join(' ');
   const meta = [
+    c ? `<span class="cemo" title="${esc(c.name)}">${esc(c.emoji || '🏷️')}</span>` : '',
     t.time ? `<span class="time">${esc(t.time)}</span>` : '',
-    o.wide && c ? `<span class="cat-name">${c.name}</span>` : '',
     !o.wide && t.note ? `<span class="has-note" title="Ёсць нататка">${I.note}</span>` : '',
     t.files?.length ? `<span class="has-photo" title="Фота: ${t.files.length}">${I.photo}${t.files.length > 1 ? t.files.length : ''}</span>` : '',
-    dream && !dream.done ? `<span class="gmark" style="--dc:${dream.color}" title="Крок да мары: ${esc(dream.title)}"></span>` : '',
+    dream && !dream.done ? `<span class="gmark" style="--dc:${dream.color}" title="${dream.endless ? 'Са спісу' : 'Крок да мары'}: ${esc(dream.title)}"></span>` : '',
     whoHTML(t.who),
   ].join('');
   let action = '';
@@ -1071,7 +1100,10 @@ function sideHTML() {
                    : `<span class="mini-empty">Адзначайце справы, і тут будзе расці калекцыя</span>`)
     + `</button></section>`
     + `<section class="pane">${bucketHTML({ ...next, sub: '' })}</section>`
-    + `<section class="pane"><h2 class="big">Наперадзе</h2>${far.map(bucketHTML).join('')}</section>`;
+    + `<section class="pane"><h2 class="big">Наперадзе</h2>${far.map(bucketHTML).join('')}</section>`
+    + `<section class="pane"><h2 class="big">Спісы</h2>${quickHTML('__list', 'Новы спіс…')}${listSuggHTML()}`
+    + listsOf().map(l => bucketHTML({ key: 'l:' + l.id, where: 'g:' + l.id, name: l.title, sub: '', empty: 'Пакуль пуста' })).join('')
+    + `</section>`;
 }
 
 function boardHTML(ws) {
@@ -1175,7 +1207,7 @@ function horizonHTML() {
     + quickHTML(b.where, 'Дадаць…')
     + listHTML(b.where, b.empty || '', { wide: true, nudge: b.now ? 'На наступны тыдзень' : '' })
     + `</section>`;
-  return `<div class="hz">${planBuckets(mondayOf(today0())).map(col).join('')}${dreamsHTML()}</div>`;
+  return `<div class="hz">${planBuckets(mondayOf(today0())).map(col).join('')}${listsColHTML()}${dreamsHTML()}</div>`;
 }
 
 function dreamHTML(d) {
@@ -1194,9 +1226,37 @@ function dreamHTML(d) {
     + `</article>`;
 }
 
+const LIST_SUGGESTIONS = ['🎬 Фільмы', '✈️ Падарожжы', '📚 Кнігі', '🍝 Рэцэпты'];
+const listsOf = () => db.dreams.filter(d => d.endless).sort((a, b) => a.ord - b.ord);
+function listSuggHTML() {
+  const have = new Set(listsOf().map(l => l.title.toLowerCase()));
+  const s = LIST_SUGGESTIONS.filter(x => !have.has(x.toLowerCase()));
+  return s.length ? `<div class="sugg">${s.map(x => `<button type="button" class="sugg-btn" data-newlist="${esc(x)}">+ ${esc(x)}</button>`).join('')}</div>` : '';
+}
+function listCardHTML(d) {
+  const items = db.tasks.filter(t => t.goal === d.id);
+  const open = items.filter(t => !t.done && t.where === 'g:' + d.id).length;
+  const planned = items.filter(t => !t.done && !t.where.startsWith('g:')).length;
+  const dn = items.filter(t => t.done).length;
+  const sub = [open ? `${open} у спісе` : 'пакуль пуста', planned ? `${planned} у плане` : '', dn ? `${dn} зроблена` : ''].filter(Boolean).join(', ');
+  return `<article class="dream endless" data-dream="${esc(d.id)}" style="--dc:${d.color}">`
+    + `<div class="dream-top"><button type="button" class="lcount" data-dream-edit aria-label="Спіс «${esc(d.title)}»">${open}</button>`
+    + `<div class="dream-meta"><button type="button" class="dream-title" data-dream-edit>${esc(d.title)}</button><span class="dream-sub">${sub}</span></div></div>`
+    + (d.note ? `<p class="dream-why">${esc(d.note)}</p>` : '')
+    + listHTML('g:' + d.id, '', { inDream: true })
+    + quickHTML('g:' + d.id, 'Дадаць у спіс…', 'step')
+    + `</article>`;
+}
+function listsColHTML() {
+  return `<section class="hcol lists"><header><h2 class="hname">Спісы</h2><p class="hsub">фільмы, месцы, кнігі: тое, што не канчаецца</p></header>`
+    + quickHTML('__list', 'Новы спіс…') + listSuggHTML()
+    + `<div class="dream-list">${listsOf().map(listCardHTML).join('')}</div>`
+    + `</section>`;
+}
+
 function dreamsHTML() {
-  const open = db.dreams.filter(d => !d.done).sort((a, b) => a.ord - b.ord);
-  const done = db.dreams.filter(d => d.done).length;
+  const open = db.dreams.filter(d => !d.done && !d.endless).sort((a, b) => a.ord - b.ord);
+  const done = db.dreams.filter(d => d.done && !d.endless).length;
   return `<section class="hcol dreams"><header><h2 class="hname">Мары</h2><p class="hsub">вялікія мэты, да якіх ідзём</p></header>`
     + quickHTML('__dream', 'Новая мара…')
     + `<div class="dream-list">${open.map(dreamHTML).join('') || '<p class="ahead-empty">Запішыце, куды хочацца прыйсці. Потым разбіце мару на крокі і цягніце іх у тыдзень.</p>'}</div>`
@@ -1221,7 +1281,7 @@ function doneHTML() {
   const byCat = {};
   tasks.filter(t => doneDate(t) >= since).forEach(t => { const k = t.cat || ''; byCat[k] = (byCat[k] || 0) + 1; });
   const legend = db.cats.filter(c => byCat[c.id])
-    .map(c => `<span><i class="sw" style="--c:${c.color}"></i>${esc(c.name)} ${byCat[c.id]}</span>`).join('')
+    .map(c => `<span title="${esc(c.name)}"><span class="cemo">${esc(c.emoji || '🏷️')}</span>${byCat[c.id]}</span>`).join('')
     + (byCat[''] ? `<span><i class="sw" style="--c:var(--ink-3)"></i>Без катэгорыі ${byCat['']}</span>` : '');
 
   let rows = '';
@@ -1239,7 +1299,7 @@ function doneHTML() {
       return `<li><button type="button" class="ditem dream-done" data-dream-id="${esc(d.id)}"><span class="dd">${DAY_SHORT[dow(dd)]} ${dd.getDate()}</span><i class="sw star" style="--c:${d.color}"></i><span class="dt">Мара: ${esc(d.title)}</span><span></span></button></li>`;
     }).join('') + sorted.slice().reverse().map(t => {
       const dd = parseISO(doneDate(t));
-      return `<li><button type="button" class="ditem" data-id="${esc(t.id)}"><span class="dd">${DAY_SHORT[dow(dd)]} ${dd.getDate()}</span><i class="sw" style="--c:${catColor(t)}"></i><span class="dt">${esc(t.title)}</span>${whoHTML(t.who)}</button></li>`;
+      return `<li><button type="button" class="ditem" data-id="${esc(t.id)}"><span class="dd">${DAY_SHORT[dow(dd)]} ${dd.getDate()}</span><span class="cemo">${esc(catById(t.cat)?.emoji || '')}</span><span class="dt">${esc(t.title)}</span>${whoHTML(t.who)}</button></li>`;
     }).join('');
     rows += `<div class="drow${open ? ' open' : ''}${n || g.dreams.length ? '' : ' empty'}" data-week="${wk}">`
       + `<button type="button" class="drow-head" aria-expanded="${open}"><span class="drange">${rangeLabel(ws, addDays(ws, 6))}<small>${relWeek(weeksBetween(m0, ws))}</small></span>`
@@ -1419,17 +1479,19 @@ $('#toast').addEventListener('click', e => {
 function addTask(where, text) {
   const p = parseQuick(text);
   if (!p.title) return false;
-  const t = { id: uid(), title: p.title, note: '', who: p.who, cat: p.cat, time: p.time, done: false, where, goal: '', ord: 0, created: Date.now() };
+  const t = { id: uid(), title: p.title, note: '', who: p.who || 'ab', cat: p.cat, time: p.time, done: false, where, goal: '', ord: 0, created: Date.now() };
   db.tasks.push(t);
   insertInto(t, where);
   save();
   return true;
 }
 
-function addDream(text) {
+function addDream(text, endless = false) {
   const title = text.trim();
   if (!title) return false;
-  db.dreams.push({ id: uid(), title, note: '', color: DREAM_COLORS[db.dreams.length % DREAM_COLORS.length], done: false, ord: db.dreams.length });
+  const d = { id: uid(), title, note: '', color: DREAM_COLORS[db.dreams.length % DREAM_COLORS.length], done: false, ord: db.dreams.length };
+  if (endless) d.endless = true;
+  db.dreams.push(d);
   save();
   return true;
 }
@@ -1442,7 +1504,7 @@ function toggleDone(id) {
   save(); render();
   if (!t.done) return;
   const dream = t.goal && dreamById(t.goal);
-  if (dream && !dream.done && db.tasks.filter(x => x.goal === dream.id).every(x => x.done)) {
+  if (dream && !dream.done && !dream.endless && db.tasks.filter(x => x.goal === dream.id).every(x => x.done)) {
     toast(`Усе крокі да «${dream.title}» зроблены. Можна адзначыць мару здзейсненай`, true);
   } else if (!t.where.startsWith('d:')) {
     toast('Гатова, справа пайшла ў «Зроблена»', true);
@@ -1589,14 +1651,14 @@ async function addEditorFiles(list) {
   for (const f of imgs) {
     try { const r = await ingest(f); if (editingId === forId) edFiles.push(r); } catch { failed++; }
     edPending--;
-    if (editingId === forId) renderEdFiles();
+    if (editingId === forId) { renderEdFiles(); autosaveEditor(); }
   }
   if (failed) toast(failed > 1 ? `Не атрымалася дадаць ${failed} фота` : 'Не атрымалася дадаць фота');
 }
 $('#edFiles').addEventListener('change', e => { if (e.target.type === 'file') { addEditorFiles(e.target.files); e.target.value = ''; } });
 $('#edFiles').addEventListener('click', e => {
   const v = e.target.closest('[data-view-i]'); if (v) return openViewer(edFiles.map(f => f.id), +v.dataset.viewI);
-  const r = e.target.closest('[data-rm-i]'); if (r) { edFiles.splice(+r.dataset.rmI, 1); renderEdFiles(); }
+  const r = e.target.closest('[data-rm-i]'); if (r) { edFiles.splice(+r.dataset.rmI, 1); renderEdFiles(); autosaveEditor(); }
 });
 $('#editor').addEventListener('paste', e => {
   const imgs = imagesOf(e.clipboardData?.files);
@@ -1689,8 +1751,10 @@ function buildWhere(cur) {
   let h = `<optgroup label="${pb[0].name}, ${pb[0].sub}">${o(pb[0].where, 'Без канкрэтнага дня')}`;
   for (let i = 0; i < 7; i++) { const d = addDays(base, i); h += o('d:' + iso(d), `${DAY_FULL[i]}, ${d.getDate()} ${MON_GEN[d.getMonth()]}`); }
   h += `</optgroup><optgroup label="Наперадзе">${pb.slice(1).map(b => o(b.where, b.name)).join('')}</optgroup>`;
-  const dreams = db.dreams.filter(d => !d.done || 'g:' + d.id === cur);
+  const dreams = db.dreams.filter(d => !d.endless && (!d.done || 'g:' + d.id === cur));
   if (dreams.length) h += `<optgroup label="Крокі мары, без даты">${dreams.map(d => o('g:' + d.id, d.title)).join('')}</optgroup>`;
+  const lists = listsOf();
+  if (lists.length) h += `<optgroup label="Спісы">${lists.map(d => o('g:' + d.id, d.title)).join('')}</optgroup>`;
   let extra = '';
   if (!vals.has(cur) && cur.startsWith('w:')) {
     const ws = parseISO(cur.slice(2));
@@ -1718,31 +1782,37 @@ function openEditor(id) {
   $('#edWho').innerHTML = radio('who', '', 'Не важна') + radio('who', 'a', db.people.a.name, '<i class="pdot a"></i>')
     + radio('who', 'b', db.people.b.name, '<i class="pdot b"></i>') + radio('who', 'ab', 'Разам', '<span class="who"><i class="a"></i><i class="b"></i></span>');
   $('#edCat').innerHTML = catChipsHTML(t.cat || '');
-  $('#edGoal').innerHTML = `<option value="">Не звязана з марай</option>`
-    + db.dreams.filter(d => !d.done || d.id === t.goal).map(d => `<option value="${esc(d.id)}"${d.id === t.goal ? ' selected' : ''}>${esc(d.title)}</option>`).join('');
+  const gopt = d => `<option value="${esc(d.id)}"${d.id === t.goal ? ' selected' : ''}>${esc(d.title)}</option>`;
+  const gd = db.dreams.filter(d => !d.endless && (!d.done || d.id === t.goal)), gl = listsOf();
+  $('#edGoal').innerHTML = `<option value="">Не звязана</option>`
+    + (gd.length ? `<optgroup label="Мары">${gd.map(gopt).join('')}</optgroup>` : '')
+    + (gl.length ? `<optgroup label="Спісы">${gl.map(gopt).join('')}</optgroup>` : '');
   $('#editor').showModal();
   if (matchMedia('(hover: hover)').matches) $('#edTitle').focus();
 }
 
 function catChipsHTML(sel) {
-  const r = (v, label, extra = '') =>
-    `<label><input type="radio" name="cat" value="${esc(v)}"${sel === v ? ' checked' : ''}><span>${extra}${esc(label)}</span></label>`;
-  return r('', 'Без') + db.cats.map(c => r(c.id, c.name, `<i class="swatch" style="--c:${c.color}"></i>`)).join('')
+  const none = `<label><input type="radio" name="cat" value=""${sel === '' ? ' checked' : ''}><span>Без</span></label>`;
+  return none + db.cats.map(c =>
+    `<label class="emo-chip" title="${esc(c.name)}"><input type="radio" name="cat" value="${esc(c.id)}"${sel === c.id ? ' checked' : ''} aria-label="${esc(c.name)}"><span>${esc(c.emoji || '🏷️')}</span></label>`).join('')
     + `<button type="button" class="newcat">+ Свая</button>`;
 }
 function nextCatColor() {
   const used = new Set(db.cats.map(c => c.color));
   return PALETTE.find(c => !used.has(c)) || PALETTE[db.cats.length % PALETTE.length];
 }
-function addCat(name) {
-  const c = { id: uid(), name: name.trim().slice(0, 24), color: nextCatColor() };
-  if (!c.name) return null;
+// "🐱 Кот" gives emoji + name; without an emoji it gets a plain tag
+function addCat(text) {
+  const { emoji, rest } = splitEmoji(text);
+  const name = (rest || (emoji ? 'Новая' : '')).slice(0, 24);
+  if (!name) return null;
+  const c = { id: uid(), name, emoji: emoji || '🏷️', color: nextCatColor() };
   db.cats.push(c); save();
   return c;
 }
 $('#edCat').addEventListener('click', e => {
   const b = e.target.closest('.newcat'); if (!b) return;
-  b.outerHTML = `<input class="newcat-in" placeholder="Назва і Enter" maxlength="24" aria-label="Новая катэгорыя">`;
+  b.outerHTML = `<input class="newcat-in" placeholder="🐱 Назва і Enter" maxlength="30" aria-label="Новая катэгорыя">`;
   $('#edCat .newcat-in').focus();
 });
 $('#edCat').addEventListener('keydown', e => {
@@ -1752,14 +1822,18 @@ $('#edCat').addEventListener('keydown', e => {
   e.preventDefault();
   const c = addCat(e.target.value);
   $('#edCat').innerHTML = catChipsHTML(c ? c.id : ($('#edForm input[name=cat]:checked')?.value || ''));
+  if (c) autosaveEditor();
 });
 
-function applyEditor(moveTo) {
+// every change in the open card is written straight away
+let edTimer = 0, edSavedTimer = 0;
+function autosaveEditor(moveTo) {
+  clearTimeout(edTimer); edTimer = 0;
   const t = byId(editingId);
-  if (!t) return $('#editor').close();
+  if (!t) return null;
+  if (moveTo) snap();
   const title = $('#edTitle').value.trim();
-  if (!title) { $('#edTitle').focus(); return; }
-  t.title = title;
+  if (title) t.title = title;
   t.note = $('#edNote').value.trim();
   t.time = $('#edTime').value;
   const wasDone = t.done;
@@ -1774,22 +1848,41 @@ function applyEditor(moveTo) {
   if (!moveTo && where === t.where && where.startsWith('g:') && goal !== where.slice(2)) where = goal ? 'g:' + goal : 'someday';
   t.goal = where.startsWith('g:') ? where.slice(2) : goal;
   t.files = edFiles.slice();
-  if (moveTo) snap();
-  if (where !== t.where) insertInto(t, where);
+  const moved = where !== t.where;
+  if (moved) insertInto(t, where);
   save();
-  $('#editor').close();
   render();
-  if (moveTo) toast(`Перанесена ${whereLabel(where)}`, true);
+  if (!moveTo) {
+    $('#edSaved').textContent = 'Захавана';
+    clearTimeout(edSavedTimer); edSavedTimer = setTimeout(() => { $('#edSaved').textContent = ''; }, 1400);
+  }
+  return { t, where, moved };
 }
-
-$('#edMoves').addEventListener('click', e => { const b = e.target.closest('[data-move]'); if (b) applyEditor(b.dataset.move); });
-$('#edWhere').addEventListener('change', e => {
-  const custom = e.target.value === 'custom';
-  $('#edDateWrap').hidden = !custom;
-  if (custom && !$('#edDate').value) $('#edDate').value = iso(today0());
+const queueAutosave = () => { clearTimeout(edTimer); edTimer = setTimeout(() => autosaveEditor(), 400); };
+function autosaveAndSync() {
+  const r = autosaveEditor();
+  if (r?.moved) { buildWhere(r.t.where); $('#edMoves').innerHTML = movesHTML(r.t); $('#edGoal').value = r.t.goal || ''; }
+}
+$('#edForm').addEventListener('input', e => { if (e.target.matches('#edTitle, #edNote')) queueAutosave(); });
+$('#edForm').addEventListener('change', e => {
+  const el = e.target;
+  if (el.matches('.newcat-in, input[type=file], #edTitle, #edNote')) return;
+  if (el.id === 'edWhere' && el.value === 'custom') {
+    $('#edDateWrap').hidden = false;
+    if (!$('#edDate').value) $('#edDate').value = iso(today0());
+    return;
+  }
+  if (el.id === 'edWhere') $('#edDateWrap').hidden = true;
+  autosaveAndSync();
 });
-$('#edForm').addEventListener('submit', e => { e.preventDefault(); applyEditor(); });
-$('#edCancel').addEventListener('click', () => $('#editor').close());
+$('#edMoves').addEventListener('click', e => {
+  const b = e.target.closest('[data-move]'); if (!b) return;
+  const r = autosaveEditor(b.dataset.move);
+  $('#editor').close();
+  if (r?.moved) toast(`Перанесена ${whereLabel(r.where)}`, true);
+});
+$('#edForm').addEventListener('submit', e => { e.preventDefault(); autosaveEditor(); $('#editor').close(); });
+$('#editor').addEventListener('close', () => { if (edTimer) autosaveEditor(); });
 $('#edDelete').addEventListener('click', () => {
   const t = byId(editingId); if (!t) return;
   snap();
@@ -1809,6 +1902,10 @@ function openDreamEditor(id) {
   $('#drColor').innerHTML = DREAM_COLORS.map(c =>
     `<label><input type="radio" name="dc" value="${c}"${c === d.color ? ' checked' : ''} aria-label="Колер ${c}"><span><i class="swatch" style="--c:${c};width:16px;height:16px;border-radius:50%"></i></span></label>`).join('');
   $('#drAchieve').textContent = d.done ? 'Вярнуць у мары' : 'Здзейснена';
+  $('#drAchieve').hidden = !!d.endless;
+  $('#drTitle').placeholder = d.endless ? 'Назва спісу, напрыклад 🎬 Фільмы' : 'Мара ці вялікая мэта';
+  $('#drNote').placeholder = d.endless ? 'Пра што гэты спіс (можна пакінуць пустым)' : 'Навошта гэта нам і як зразумець, што дайшлі';
+  $('#dreamEd').setAttribute('aria-label', d.endless ? 'Спіс' : 'Мара');
   $('#dreamEd').showModal();
   if (matchMedia('(hover: hover)').matches) $('#drTitle').focus();
 }
@@ -1818,11 +1915,16 @@ function saveDreamFields(d) {
   d.note = $('#drNote').value.trim();
   d.color = $('#drForm').querySelector('input[name=dc]:checked')?.value || d.color;
 }
-$('#drForm').addEventListener('submit', e => {
-  e.preventDefault();
-  const d = dreamById(editingDream); if (!d) return $('#dreamEd').close();
-  saveDreamFields(d); save(); $('#dreamEd').close(); render();
-});
+let drTimer = 0;
+function saveDreamNow() {
+  clearTimeout(drTimer); drTimer = 0;
+  const d = dreamById(editingDream); if (!d) return;
+  saveDreamFields(d); save(); render();
+}
+$('#drForm').addEventListener('input', () => { clearTimeout(drTimer); drTimer = setTimeout(saveDreamNow, 400); });
+$('#drForm').addEventListener('change', saveDreamNow);
+$('#drForm').addEventListener('submit', e => { e.preventDefault(); saveDreamNow(); $('#dreamEd').close(); });
+$('#dreamEd').addEventListener('close', () => { if (drTimer) saveDreamNow(); });
 $('#drAchieve').addEventListener('click', () => {
   const d = dreamById(editingDream); if (!d) return;
   snap();
@@ -1841,7 +1943,7 @@ $('#drDelete').addEventListener('click', () => {
   });
   db.dreams = db.dreams.filter(x => x.id !== d.id);
   save(); $('#dreamEd').close(); render();
-  toast('Мара выдалена, яе крокі ляжаць у «Калісьці»', true);
+  toast(d.endless ? 'Спіс выдалены, яго пункты ляжаць у «Калісьці»' : 'Мара выдалена, яе крокі ляжаць у «Калісьці»', true);
 });
 $$('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
 
@@ -1855,6 +1957,7 @@ function renderCatList() {
       ? `<div class="palette">${PALETTE.map(col => `<button type="button" data-color="${col}" style="--c:${col}" aria-label="Колер ${col}" aria-pressed="${col === c.color}"></button>`).join('')}</div>` : '';
     return `<div class="catrow" data-cat="${esc(c.id)}">`
       + `<button type="button" class="catsw" style="--c:${c.color}" aria-label="Памяняць колер «${esc(c.name)}»" aria-expanded="${openPalette === c.id}"></button>`
+      + `<input class="catemo" value="${esc(c.emoji || '')}" maxlength="12" aria-label="Эмоджы катэгорыі «${esc(c.name)}»">`
       + `<input class="catname" value="${esc(c.name)}" maxlength="24" aria-label="Назва катэгорыі">`
       + `<span class="catn" title="Колькі спраў">${n || ''}</span>`
       + `<button type="button" class="catdel" aria-label="Выдаліць «${esc(c.name)}»">×</button>${pal}</div>`;
@@ -1876,6 +1979,12 @@ $('#catList').addEventListener('click', e => {
   }
 });
 $('#catList').addEventListener('change', e => {
+  if (e.target.classList.contains('catemo')) {
+    const c = catById(e.target.closest('.catrow').dataset.cat); if (!c) return;
+    const g = firstGrapheme(e.target.value);
+    if (g) { c.emoji = g; e.target.value = g; save(); render(); } else e.target.value = c.emoji;
+    return;
+  }
   if (!e.target.classList.contains('catname')) return;
   const c = catById(e.target.closest('.catrow').dataset.cat); if (!c) return;
   const v = e.target.value.trim();
@@ -1972,6 +2081,7 @@ app.addEventListener('click', e => {
     open ? doneOpen.add(wk) : doneOpen.delete(wk);
     return;
   }
+  const nl = el.closest('[data-newlist]'); if (nl) { if (addDream(nl.dataset.newlist, true)) render(); return; }
   const de = el.closest('[data-dream-edit]'); if (de) return openDreamEditor(de.closest('.dream').dataset.dream);
   const ddone = el.closest('[data-dream-id]'); if (ddone) return openDreamEditor(ddone.dataset.dreamId);
   const ai = el.closest('.ahead-item, .ditem[data-id]'); if (ai) return openEditor(ai.dataset.id);
@@ -1985,7 +2095,7 @@ app.addEventListener('submit', e => {
   const f = e.target.closest('.quick'); if (!f) return;
   e.preventDefault();
   const where = f.dataset.where, val = f.elements.q.value;
-  const ok = where === '__dream' ? addDream(val) : addTask(where, val);
+  const ok = where === '__dream' ? addDream(val) : where === '__list' ? addDream(val, true) : addTask(where, val);
   if (ok) { refocus = where; render(); }
 });
 

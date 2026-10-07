@@ -486,7 +486,7 @@ const I18N = {
     jarMoves:'Гісторыя', noMoves:'Яшчэ нічога не клалі.', jarsMonth:'Адкладзена ў гэтым месяцы', totalSaved:'Усяго ў скарбонках',
     colJar:'Скарб.', qJar:'У скарбонку', qJarSub:'адкласці на мэту', jarSettings:'Налады скарбонкі',
     season:'Тэма-ўпрыгожванне', seasons:{auto:'аўта (сезон + святы)',off:'выключана',winter:'зіма',spring:'вясна',summer:'лета',autumn:'восень'}, seasonsGrp:'Сезоны', holidaysGrp:'Святы',
-    holidays:{newyear:'Новы год і Каляды',mikulas:'Мікола (Mikuláš)',valentine:'Дзень Валянціна',women:'8 Сакавіка',pi:'Дзень π',fools:'1 красавіка',cosmo:'Дзень касманаўтыкі',easter:'Вялікдзень',kupala:'Купалле',cats:'Дзень котак',halloween:'Хэлоўін',dziady:'Дзяды',birthday:'Дзень нараджэння'},
+    holidays:{newyear:'Новы год і Каляды',mikulas:'Мікола (Mikuláš)',valentine:'Дзень Валянціна',women:'8 Сакавіка',pi:'Дзень π',fools:'1 красавіка',cosmo:'Дзень касманаўтыкі',easter:'Вялікдзень',kupala:'Купалле',cats:'Дзень котак',halloween:'Хэлоўін',dziady:'Дзяды',birthday:'Дзень нараджэння (з Налад)',svitlanka:'ДН Світланкі 👑',sobornist:'Дзень Саборнасці Украіны',maslyana:'Масленіца',shevchenko:'Дзень Шаўчэнкі',vyshyvanka:'Дзень вышыванкі',triytsia:'Тройца (Зялёныя святы)',constitution:'Дзень Канстытуцыі Украіны',flag:'Дзень Сцяга Украіны',independence:'Дзень Незалежнасці Украіны',spas:'Яблычны Спас',mova:'Дзень украінскай мовы',andriy:'Андрэя (калита)'},
     bday:'Дзень нараджэння (для святочнай тэмы)',
     confettiOpt:'Канфеці 🎉',
     wrapBtn:'✨ Вынікі: {0}', w1Title:'Твой {0}', w1Sub:'Капшук падрыхтаваў справаздачу 👽',
@@ -548,7 +548,7 @@ const I18N = {
     jarMoves:'Історія', noMoves:'Ще нічого не клали.', jarsMonth:'Відкладено цього місяця', totalSaved:'Усього у скарбничках',
     colJar:'Скарб.', qJar:'У скарбничку', qJarSub:'відкласти на ціль', jarSettings:'Налаштування скарбнички',
     season:'Тема-прикраса', seasons:{auto:'авто (сезон + свята)',off:'вимкнено',winter:'зима',spring:'весна',summer:'літо',autumn:'осінь'}, seasonsGrp:'Сезони', holidaysGrp:'Свята',
-    holidays:{newyear:'Новий рік і Різдво',mikulas:'День святого Миколая',valentine:'День Валентина',women:'8 Березня',pi:'День π',fools:'1 квітня',cosmo:'День космонавтики',easter:'Великдень',kupala:'Івана Купала',cats:'День котів',halloween:'Гелловін',dziady:'Діди',birthday:'День народження'},
+    holidays:{newyear:'Новий рік і Різдво',mikulas:'День святого Миколая',valentine:'День Валентина',women:'8 Березня',pi:'День π',fools:'1 квітня',cosmo:'День космонавтики',easter:'Великдень',kupala:'Івана Купала',cats:'День котів',halloween:'Гелловін',dziady:'Діди',birthday:'День народження (з Налаштувань)',svitlanka:'ДН Світланки 👑',sobornist:'День Соборності України',maslyana:'Масниця',shevchenko:'Шевченківські дні',vyshyvanka:'День вишиванки',triytsia:'Трійця (Зелені свята)',constitution:'День Конституції України',flag:'День Державного Прапора',independence:'День Незалежності України',spas:'Яблучний Спас',mova:'День української писемності та мови',andriy:'Андрія (калита)'},
     bday:'День народження (для святкової теми)',
     confettiOpt:'Конфеті 🎉',
     wrapBtn:'✨ Підсумки: {0}', w1Title:'Твій {0}', w1Sub:'Гаманець підготував звіт 👽',
@@ -982,7 +982,7 @@ view.addEventListener('change', e => {
   if (e.target.id === 'theme') { S.settings.theme = e.target.value; applyTheme(); save(); }
   if (e.target.id === 'langSel') setLang(e.target.value);
   if (e.target.id === 'confTgl') { S.settings.confetti = e.target.checked; save(); if (e.target.checked) celebrate(e.target, 'mid'); }
-  if (e.target.id === 'seasonSel') { S.settings.season = e.target.value; save(); applySeason(); const ph = themeSay(); if (ph) mascotSay(ph); if (e.target.value === 'birthday') celebrate(null, 'big'); }
+  if (e.target.id === 'seasonSel') { S.settings.season = e.target.value; save(); applySeason(); const ph = themeSay(); if (ph) mascotSay(ph); if ((THEMES[e.target.value] || {}).party) celebrate(null, 'big'); }
   if (e.target.id === 'bdaySel') { S.settings.birthday = e.target.value; seasonNow = '-'; save(); applySeason(); }
   if (e.target.id === 'mascotTgl') { S.settings.mascot = e.target.checked; save(); mascotShow(); }
   if (e.target.id === 'file') {
@@ -1161,20 +1161,38 @@ const THEMES = {
   cats:     { fx: ['🐱', '🐾', '😺', '🐾'], icon: '🐱', say: ['мяу! бюджет на корм ок? 🐱', 'котики — найкраща інвестиція 🐾'] },
   halloween:{ fx: ['🎃', '🦇', '👻', '🕸️'], icon: '🎃', accent: '#d0631f', say: ['бу! страшні витрати 🎃', 'солодощі або перевитрата! 👻'] },
   dziady:   { fx: ['🕯️', '🍂', '✨', '🕯️'], icon: '🕯️', up: 1, say: ['тихенько згадуємо рідних 🕯️'] },
-  birthday: { fx: ['🎂', '🎈', '🎉', '🎁'], icon: '🎂', up: 1, accent: '#d04a8a', say: ['з днем народження!!! 🎂', 'сьогодні можна все! ну… майже 🎈'] },
+  svitlanka:{ fx: ['🎂', '💐', '👑', '🎈'], icon: '👑', up: 1, accent: '#d04a8a', party: 1, say: ['з днем народження, Світланко!!! 🎂', 'Світланка — королева гаманця 👑', 'сьогодні Світланці можна все 💐', 'уабулабудуптуп, Світланко! 🎈'] },
+  sobornist:{ fx: ['💙', '💛', '🤝', '✨'], icon: '🤝', accent: '#2a62c9', say: ['з Днем Соборності! 💙💛', 'разом — сила, і бюджет теж'] },
+  maslyana: { fx: ['🥞', '🧈', '☀️', '🥞'], icon: '🥞', accent: '#c98a12', say: ['млинці не рахуються як витрата 🥞', 'масниця! масла не шкодуємо 🧈'] },
+  shevchenko:{ fx: ['📜', '🖋️', '🌾', '📖'], icon: '📜', say: ['і чужому научайтесь, й свого не цурайтесь 📜', 'Кобзар би схвалив цей бюджет ✍️'] },
+  vyshyvanka:{ fx: ['🌺', '🧵', '✿', '🌺'], icon: '🌺', accent: '#b3261e', color: '#b3261e', say: ['де моя вишиванка? 🌺', 'вишиванка на мені — космічна 🧵'] },
+  triytsia: { fx: ['🌿', '🌳', '🍃', '🌿'], icon: '🌿', accent: '#2f8f3e', say: ['зелені свята! 🌿', 'клечання в хаті 🌳'] },
+  constitution:{ fx: ['📘', '💙', '💛', '⭐'], icon: '📘', accent: '#2a62c9', say: ['з Днем Конституції! 📘', 'стаття перша: гаманець має бути щасливим'] },
+  flag:     { fx: ['💙', '💛', '🇺🇦', '💛'], icon: '💙', up: 1, accent: '#2a62c9', say: ['синє небо, жовте поле 💙💛', 'з Днем Прапора! 🇺🇦'] },
+  independence:{ fx: ['🌻', '💙', '🎆', '💛'], icon: '🌻', up: 1, accent: '#2a62c9', party: 1, say: ['з Днем Незалежності! 💙💛', 'незалежний і від кредитів! 💪'] },
+  spas:     { fx: ['🍎', '🍯', '🍏', '🍎'], icon: '🍎', say: ['яблучка святимо 🍎', 'медок, мак і яблука 🍯'] },
+  mova:     { fx: ['✍️', 'Ї', '📚', 'Є', '🐦', 'Ґ'], icon: '✍️', color: '#2a62c9', say: ['солов’їна мова 🐦', 'пишу витрати без помилок ✍️'] },
+  andriy:   { fx: ['🍯', '🔮', '🕯️', '✨'], icon: '🔮', up: 1, say: ['кусаємо калиту 🍯', 'ворожу на бюджет 🔮'] },
+  birthday: { fx: ['🎂', '🎈', '🎉', '🎁'], icon: '🎂', up: 1, accent: '#d04a8a', party: 1, say: ['з днем народження!!! 🎂', 'сьогодні можна все! ну… майже 🎈'] },
 };
 const SEASON_KEYS = ['winter', 'spring', 'summer', 'autumn'];
-const HOLIDAY_KEYS = ['newyear', 'mikulas', 'valentine', 'women', 'pi', 'fools', 'cosmo', 'easter', 'kupala', 'cats', 'halloween', 'dziady', 'birthday'];
+const HOLIDAY_KEYS = ['svitlanka', 'birthday', 'newyear', 'sobornist', 'valentine', 'maslyana', 'women', 'shevchenko', 'pi', 'fools', 'cosmo', 'easter', 'vyshyvanka', 'triytsia', 'constitution', 'kupala', 'cats', 'spas', 'flag', 'independence', 'halloween', 'dziady', 'mova', 'andriy', 'mikulas'];
 function easterW(y) { const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451), mo = Math.floor((h + l - 7 * m + 114) / 31), da = ((h + l - 7 * m + 114) % 31) + 1; return new Date(y, mo - 1, da); }
 function easterO(y) { const a = y % 4, b = y % 7, c = y % 19, d = (19 * c + 15) % 30, e = (2 * a + 4 * b - d + 34) % 7, mo = Math.floor((d + e + 114) / 31), da = ((d + e + 114) % 31) + 1; return new Date(y, mo - 1, da + 13); }
 function holidayOf(dt) {
   const md = (dt.getMonth() + 1) * 100 + dt.getDate(), y = dt.getFullYear();
   const bd = S.settings.birthday;
   if (bd && +bd.slice(5, 7) * 100 + +bd.slice(8, 10) === md) return 'birthday';
-  for (const e of [easterW(y), easterO(y)]) { const diff = Math.round((dt - e) / 864e5); if (diff >= -2 && diff <= 1) return 'easter'; }
+  if (md === 925) return 'svitlanka';
+  const dd = e => Math.round((new Date(y, dt.getMonth(), dt.getDate()) - e) / 864e5);
+  for (const e of [easterW(y), easterO(y)]) { const diff = dd(e); if (diff >= -2 && diff <= 1) return 'easter'; }
+  const eo = dd(easterO(y));
+  if (eo >= -55 && eo <= -49) return 'maslyana';
+  if (eo >= 49 && eo <= 50) return 'triytsia';
+  if (dt.getMonth() === 4 && dt.getDay() === 4 && dt.getDate() >= 15 && dt.getDate() <= 21) return 'vyshyvanka';
   if (md >= 1220 || md <= 107) return 'newyear';
-  const R = [[1205, 1206, 'mikulas'], [212, 214, 'valentine'], [307, 308, 'women'], [314, 314, 'pi'], [401, 401, 'fools'], [412, 412, 'cosmo'],
-    [706, 707, 'kupala'], [808, 808, 'cats'], [1029, 1031, 'halloween'], [1101, 1102, 'dziady']];
+  const R = [[1205, 1206, 'mikulas'], [122, 122, 'sobornist'], [212, 214, 'valentine'], [307, 308, 'women'], [309, 309, 'shevchenko'], [314, 314, 'pi'], [401, 401, 'fools'], [412, 412, 'cosmo'],
+    [628, 628, 'constitution'], [706, 707, 'kupala'], [808, 808, 'cats'], [819, 819, 'spas'], [823, 823, 'flag'], [824, 824, 'independence'], [1029, 1031, 'halloween'], [1101, 1102, 'dziady'], [1109, 1109, 'mova'], [1130, 1130, 'andriy']];
   for (const [a, b, k] of R) if (md >= a && md <= b) return k;
   return '';
 }
@@ -1312,7 +1330,7 @@ const EV = {
 };
 function mascotEvent(k) { if (S.settings.mascot === false) return; const a = EV[k]; mascotDance(k === 'over' ? 9 : (k === 'goal' || k === 'allPaid') ? 2 : undefined); mascotSay(a[Math.floor(Math.random() * a.length)]); mEl.classList.remove('boing'); void mEl.offsetWidth; mEl.classList.add('boing'); }
 mascotShow();
-setTimeout(() => { mascotSay(themeSay() || 'уабулабудуптуп!'); if (currentTheme() === 'birthday') celebrate(null, 'big'); }, 900);
+setTimeout(() => { mascotSay(themeSay() || 'уабулабудуптуп!'); if ((THEMES[currentTheme()] || {}).party) celebrate(null, 'big'); }, 900);
 
 applyTheme();
 render();

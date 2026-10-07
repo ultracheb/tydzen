@@ -485,7 +485,9 @@ const I18N = {
     eta:'яшчэ ≈ {0} мес.', etaNone:'пакладзі што-небудзь, і я парахую тэрмін', jarDone:'мэта дасягнута! 🎉',
     jarMoves:'Гісторыя', noMoves:'Яшчэ нічога не клалі.', jarsMonth:'Адкладзена ў гэтым месяцы', totalSaved:'Усяго ў скарбонках',
     colJar:'Скарб.', qJar:'У скарбонку', qJarSub:'адкласці на мэту', jarSettings:'Налады скарбонкі',
-    season:'Сезонная тэма', seasons:{auto:'аўта (па месяцы)',off:'выключана',winter:'зіма',spring:'вясна',summer:'лета',autumn:'восень'},
+    season:'Тэма-ўпрыгожванне', seasons:{auto:'аўта (сезон + святы)',off:'выключана',winter:'зіма',spring:'вясна',summer:'лета',autumn:'восень'}, seasonsGrp:'Сезоны', holidaysGrp:'Святы',
+    holidays:{newyear:'Новы год і Каляды',mikulas:'Мікола (Mikuláš)',valentine:'Дзень Валянціна',women:'8 Сакавіка',pi:'Дзень π',fools:'1 красавіка',cosmo:'Дзень касманаўтыкі',easter:'Вялікдзень',kupala:'Купалле',cats:'Дзень котак',halloween:'Хэлоўін',dziady:'Дзяды',birthday:'Дзень нараджэння'},
+    bday:'Дзень нараджэння (для святочнай тэмы)',
     confettiOpt:'Канфеці 🎉',
     wrapBtn:'✨ Вынікі: {0}', w1Title:'Твой {0}', w1Sub:'Капшук падрыхтаваў справаздачу 👽',
     w2:'За месяц выдаткавана', w2sub:'{0}, у сярэднім {1} у дзень',
@@ -545,7 +547,9 @@ const I18N = {
     eta:'ще ≈ {0} міс.', etaNone:'поклади щось, і я порахую термін', jarDone:'ціль досягнута! 🎉',
     jarMoves:'Історія', noMoves:'Ще нічого не клали.', jarsMonth:'Відкладено цього місяця', totalSaved:'Усього у скарбничках',
     colJar:'Скарб.', qJar:'У скарбничку', qJarSub:'відкласти на ціль', jarSettings:'Налаштування скарбнички',
-    season:'Сезонна тема', seasons:{auto:'авто (за місяцем)',off:'вимкнено',winter:'зима',spring:'весна',summer:'літо',autumn:'осінь'},
+    season:'Тема-прикраса', seasons:{auto:'авто (сезон + свята)',off:'вимкнено',winter:'зима',spring:'весна',summer:'літо',autumn:'осінь'}, seasonsGrp:'Сезони', holidaysGrp:'Свята',
+    holidays:{newyear:'Новий рік і Різдво',mikulas:'День святого Миколая',valentine:'День Валентина',women:'8 Березня',pi:'День π',fools:'1 квітня',cosmo:'День космонавтики',easter:'Великдень',kupala:'Івана Купала',cats:'День котів',halloween:'Гелловін',dziady:'Діди',birthday:'День народження'},
+    bday:'День народження (для святкової теми)',
     confettiOpt:'Конфеті 🎉',
     wrapBtn:'✨ Підсумки: {0}', w1Title:'Твій {0}', w1Sub:'Гаманець підготував звіт 👽',
     w2:'За місяць витрачено', w2sub:'{0}, у середньому {1} на день',
@@ -820,7 +824,11 @@ function vSettings() {
     </div>
     <label class="field inline"><input type="checkbox" class="chk" id="mascotTgl" ${S.settings.mascot === false ? '' : 'checked'}> ${t('mascot')} 👽</label>
     <label class="field inline"><input type="checkbox" class="chk" id="confTgl" ${S.settings.confetti === false ? '' : 'checked'}> ${t('confettiOpt')}</label>
-    <label class="field"><span>${t('season')}</span><select id="seasonSel">${Object.entries(L('seasons')).map(([k, l]) => `<option value="${k}" ${(S.settings.season || 'auto') === k ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+    <label class="field"><span>${t('season')}</span><select id="seasonSel">${(() => { const sel = S.settings.season || 'auto', o = (k, l) => `<option value="${k}" ${sel === k ? 'selected' : ''}>${l}</option>`;
+      return o('auto', L('seasons').auto) + o('off', L('seasons').off)
+        + `<optgroup label="${t('seasonsGrp')}">${SEASON_KEYS.map(k => o(k, THEMES[k].icon + ' ' + L('seasons')[k])).join('')}</optgroup>`
+        + `<optgroup label="${t('holidaysGrp')}">${HOLIDAY_KEYS.map(k => o(k, THEMES[k].icon + ' ' + L('holidays')[k])).join('')}</optgroup>`; })()}</select></label>
+    <label class="field"><span>${t('bday')}</span><input type="date" id="bdaySel" value="${esc(S.settings.birthday || '')}"></label>
     <label class="field"><span>${t('theme')}</span><select id="theme">
       ${[['', t('themeSys')], ['light', t('themeLight')], ['dark', t('themeDark')]].map(([v, l]) => `<option value="${v}" ${(S.settings.theme || '') === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
@@ -974,7 +982,8 @@ view.addEventListener('change', e => {
   if (e.target.id === 'theme') { S.settings.theme = e.target.value; applyTheme(); save(); }
   if (e.target.id === 'langSel') setLang(e.target.value);
   if (e.target.id === 'confTgl') { S.settings.confetti = e.target.checked; save(); if (e.target.checked) celebrate(e.target, 'mid'); }
-  if (e.target.id === 'seasonSel') { S.settings.season = e.target.value; save(); applySeason(); }
+  if (e.target.id === 'seasonSel') { S.settings.season = e.target.value; save(); applySeason(); const ph = themeSay(); if (ph) mascotSay(ph); if (e.target.value === 'birthday') celebrate(null, 'big'); }
+  if (e.target.id === 'bdaySel') { S.settings.birthday = e.target.value; seasonNow = '-'; save(); applySeason(); }
   if (e.target.id === 'mascotTgl') { S.settings.mascot = e.target.checked; save(); mascotShow(); }
   if (e.target.id === 'file') {
     const f = e.target.files[0]; if (!f) return;
@@ -1134,28 +1143,69 @@ function celebrate(el, size) {
   try { navigator.vibrate && navigator.vibrate(size === 'big' ? [20, 40, 20] : 12); } catch (e) {}
 }
 
-/* ---------- seasons ---------- */
-const SEASON_FX = { winter: ['❄', '❅', '❆', '❄'], autumn: ['🍂', '🍁', '🍂', '🍃'], spring: ['🌸', '💮', '🌸', '🌼'], summer: ['✨', '·', '✨', '•'] };
-const SEASON_ICON = { winter: '❄️', autumn: '🍂', spring: '🌸', summer: '☀️' };
-let seasonNow = '';
-function seasonOf(m) { const mm = +m.slice(5); return mm === 12 || mm <= 2 ? 'winter' : mm <= 5 ? 'spring' : mm <= 8 ? 'summer' : 'autumn'; }
-function applySeason() {
-  const pref = S.settings.season || 'auto';
-  const s = pref === 'off' ? '' : pref === 'auto' ? seasonOf(cur) : pref;
-  const xmas = s === 'winter' && (pref !== 'auto' || +cur.slice(5) === 12);
-  const key = s + xmas;
-  document.getElementById('seasonIcon').textContent = s ? SEASON_ICON[s] : '';
-  if (key === seasonNow) return; seasonNow = key;
-  const lay = document.getElementById('season');
-  lay.className = s === 'summer' ? 'up' : '';
-  lay.innerHTML = s ? Array.from({ length: 14 }, (_, i) => {
-    const ch = SEASON_FX[s][i % 4], dur = 10 + Math.random() * 12, sz = 12 + Math.random() * 12;
-    const col = s === 'winter' ? 'color:#9cc3e6;' : s === 'summer' ? 'color:#f2c94c;' : '';
-    return `<span style="left:${Math.random() * 100}%;font-size:${sz}px;animation-duration:${dur}s;animation-delay:${-Math.random() * dur}s;${col}">${ch}</span>`;
-  }).join('') : '';
-  document.getElementById('garland').innerHTML = xmas ? Array.from({ length: 22 }, (_, i) => `<i style="color:${['#ff5a5a', '#ffd23f', '#5ad17a', '#5aa9ff'][i % 4]}"></i>`).join('') : '';
-  document.getElementById('garland').style.display = xmas ? '' : 'none';
+/* ---------- seasons & holidays ---------- */
+const THEMES = {
+  winter:   { fx: ['❄', '❅', '❆', '❄'], icon: '❄️', color: '#9cc3e6' },
+  spring:   { fx: ['🌸', '💮', '🌸', '🌼'], icon: '🌸' },
+  summer:   { fx: ['✨', '·', '✨', '•'], icon: '☀️', up: 1, color: '#f2c94c' },
+  autumn:   { fx: ['🍂', '🍁', '🍂', '🍃'], icon: '🍂' },
+  newyear:  { fx: ['❄', '🎄', '🎁', '✨'], icon: '🎄', garland: 1, color: '#9cc3e6', say: ['з Новим роком, земляни! 🎄', 'хо-хо-хо, бюджет!', 'подарунки за планом? 🎁'] },
+  mikulas:  { fx: ['😇', '😈', '🍬', '⭐'], icon: '😇', say: ['чи був ти чемним з витратами? 😇', 'цукерочки — в бюджет! 🍬'] },
+  valentine:{ fx: ['❤️', '💕', '💘', '💗'], icon: '💘', up: 1, accent: '#c2477a', say: ['люблю тебе більше, ніж кешбек 💘', 'серденько-гаманечко 💕'] },
+  women:    { fx: ['🌷', '💐', '🌸', '🌷'], icon: '🌷', accent: '#c2477a', say: ['з 8 березня! 🌷', 'квіточки не враховуються в ліміт 💐'] },
+  pi:       { fx: ['π', '🥧', '3.14', 'π'], icon: 'π', color: '#7a5cc2', say: ['π = 3.14 крони 🥧', 'ірраціональні витрати!'] },
+  fools:    { fx: ['🤡', '🎈', '🙃', '🎈'], icon: '🤡', up: 1, flip: 1, say: ['гроші закінчились! …жартую 🤡', 'я завжди так стою 🙃'] },
+  cosmo:    { fx: ['🚀', '🪐', '⭐', '☄️'], icon: '🚀', up: 1, accent: '#4a3fb0', say: ['мої родичі вітають! 🚀', '⟟⏃⋔ ⍜⟒⟒ — це «з святом» нашою'] },
+  easter:   { fx: ['🥚', '🐣', '🌷', '🐰'], icon: '🐣', say: ['смачної паски! 🐣', 'крашанки — в бюджет 🥚'] },
+  kupala:   { fx: ['🌿', '🔥', '🌼', '✨'], icon: '🌿', up: 1, accent: '#2f8f3e', say: ['шукаю цвіт папороті 🌿', 'стрибаємо через вогнище! 🔥'] },
+  cats:     { fx: ['🐱', '🐾', '😺', '🐾'], icon: '🐱', say: ['мяу! бюджет на корм ок? 🐱', 'котики — найкраща інвестиція 🐾'] },
+  halloween:{ fx: ['🎃', '🦇', '👻', '🕸️'], icon: '🎃', accent: '#d0631f', say: ['бу! страшні витрати 🎃', 'солодощі або перевитрата! 👻'] },
+  dziady:   { fx: ['🕯️', '🍂', '✨', '🕯️'], icon: '🕯️', up: 1, say: ['тихенько згадуємо рідних 🕯️'] },
+  birthday: { fx: ['🎂', '🎈', '🎉', '🎁'], icon: '🎂', up: 1, accent: '#d04a8a', say: ['з днем народження!!! 🎂', 'сьогодні можна все! ну… майже 🎈'] },
+};
+const SEASON_KEYS = ['winter', 'spring', 'summer', 'autumn'];
+const HOLIDAY_KEYS = ['newyear', 'mikulas', 'valentine', 'women', 'pi', 'fools', 'cosmo', 'easter', 'kupala', 'cats', 'halloween', 'dziady', 'birthday'];
+function easterW(y) { const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451), mo = Math.floor((h + l - 7 * m + 114) / 31), da = ((h + l - 7 * m + 114) % 31) + 1; return new Date(y, mo - 1, da); }
+function easterO(y) { const a = y % 4, b = y % 7, c = y % 19, d = (19 * c + 15) % 30, e = (2 * a + 4 * b - d + 34) % 7, mo = Math.floor((d + e + 114) / 31), da = ((d + e + 114) % 31) + 1; return new Date(y, mo - 1, da + 13); }
+function holidayOf(dt) {
+  const md = (dt.getMonth() + 1) * 100 + dt.getDate(), y = dt.getFullYear();
+  const bd = S.settings.birthday;
+  if (bd && +bd.slice(5, 7) * 100 + +bd.slice(8, 10) === md) return 'birthday';
+  for (const e of [easterW(y), easterO(y)]) { const diff = Math.round((dt - e) / 864e5); if (diff >= -2 && diff <= 1) return 'easter'; }
+  if (md >= 1220 || md <= 107) return 'newyear';
+  const R = [[1205, 1206, 'mikulas'], [212, 214, 'valentine'], [307, 308, 'women'], [314, 314, 'pi'], [401, 401, 'fools'], [412, 412, 'cosmo'],
+    [706, 707, 'kupala'], [808, 808, 'cats'], [1029, 1031, 'halloween'], [1101, 1102, 'dziady']];
+  for (const [a, b, k] of R) if (md >= a && md <= b) return k;
+  return '';
 }
+function seasonOf(m) { const mm = +m.slice(5); return mm === 12 || mm <= 2 ? 'winter' : mm <= 5 ? 'spring' : mm <= 8 ? 'summer' : 'autumn'; }
+function currentTheme() {
+  const pref = S.settings.season || 'auto';
+  if (pref === 'off') return '';
+  if (pref !== 'auto') return pref;
+  return (cur === ym(new Date()) && holidayOf(new Date())) || seasonOf(cur);
+}
+let seasonNow = '';
+function applySeason() {
+  const k = currentTheme(), th = THEMES[k];
+  const garland = th && (th.garland || (k === 'winter' && +cur.slice(5) === 12));
+  document.getElementById('seasonIcon').textContent = th ? th.icon : '';
+  if (k === seasonNow) return; seasonNow = k;
+  const lay = document.getElementById('season');
+  lay.className = th && th.up ? 'up' : '';
+  const n = HOLIDAY_KEYS.includes(k) ? 18 : 14;
+  lay.innerHTML = th ? Array.from({ length: n }, (_, i) => {
+    const ch = th.fx[i % th.fx.length], dur = 10 + Math.random() * 12, sz = 12 + Math.random() * 12;
+    return `<span style="left:${Math.random() * 100}%;font-size:${sz}px;animation-duration:${dur}s;animation-delay:${-Math.random() * dur}s;${th.color ? 'color:' + th.color + ';font-weight:700;' : ''}">${ch}</span>`;
+  }).join('') : '';
+  const g = document.getElementById('garland');
+  g.innerHTML = garland ? Array.from({ length: 22 }, (_, i) => `<i style="color:${['#ff5a5a', '#ffd23f', '#5ad17a', '#5aa9ff'][i % 4]}"></i>`).join('') : '';
+  g.style.display = garland ? '' : 'none';
+  const root = document.documentElement.style;
+  th && th.accent ? root.setProperty('--accent', th.accent) : root.removeProperty('--accent');
+  const svg = document.getElementById('mSvg'); if (svg) svg.style.transform = th && th.flip ? 'rotate(180deg)' : '';
+}
+const themeSay = () => { const th = THEMES[currentTheme()]; return th && th.say ? th.say[Math.floor(Math.random() * th.say.length)] : ''; };
 
 /* ---------- wrapped ---------- */
 const wr = document.getElementById('wr');
@@ -1242,7 +1292,7 @@ let mDance = 0, mBubT = 0;
 function mascotShow() { mEl.style.display = S.settings.mascot === false ? 'none' : ''; }
 function mascotDance(i) { mDance = i ?? (mDance + 1 + Math.floor(Math.random() * (DANCES.length - 1))) % DANCES.length; mSvg.setAttribute('class', DANCES[mDance]); }
 function mascotSay(txt) {
-  if (!txt) { const sad = monthCalc(cur).free < 0 && Math.random() < .5; const arr = sad ? SAD : PHRASES; txt = arr[Math.floor(Math.random() * arr.length)]; }
+  if (!txt) { const sad = monthCalc(cur).free < 0 && Math.random() < .5; const arr = sad ? SAD : PHRASES; txt = (!sad && Math.random() < .35 && themeSay()) || arr[Math.floor(Math.random() * arr.length)]; }
   mBub.textContent = txt; mBub.classList.add('on');
   clearTimeout(mBubT); mBubT = setTimeout(() => mBub.classList.remove('on'), 2600);
 }
@@ -1262,7 +1312,7 @@ const EV = {
 };
 function mascotEvent(k) { if (S.settings.mascot === false) return; const a = EV[k]; mascotDance(k === 'over' ? 9 : (k === 'goal' || k === 'allPaid') ? 2 : undefined); mascotSay(a[Math.floor(Math.random() * a.length)]); mEl.classList.remove('boing'); void mEl.offsetWidth; mEl.classList.add('boing'); }
 mascotShow();
-setTimeout(() => mascotSay('уабулабудуптуп!'), 900);
+setTimeout(() => { mascotSay(themeSay() || 'уабулабудуптуп!'); if (currentTheme() === 'birthday') celebrate(null, 'big'); }, 900);
 
 applyTheme();
 render();

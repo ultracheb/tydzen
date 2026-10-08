@@ -166,6 +166,15 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding:20px 0}
 .swatches input:checked+i{border-color:var(--ink)}
 .wrap-btn{display:block;width:100%;border:0;border-radius:var(--radius);padding:14px;margin:-4px 0 16px;font-weight:700;font-size:15px;color:#fff;cursor:pointer;background:linear-gradient(115deg,#6a3fd1,#d04a8a 55%,#f0a340);box-shadow:0 4px 14px rgba(106,63,209,.25)}
 
+/* ---------- sync & toast ---------- */
+.sync-dot{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--card);cursor:pointer;position:relative;padding:0;flex:none}
+.sync-dot::after{content:"";position:absolute;inset:9px;border-radius:50%;background:var(--muted)}
+.sync-dot.is-ok::after{background:#3bb273;box-shadow:0 0 6px #3bb273}
+.sync-dot.is-busy::after{background:#e3a650;animation:blink .5s ease-in-out infinite alternate}
+.sync-dot.is-err::after{background:var(--danger)}
+.toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translate(-50%,-20px);opacity:0;z-index:90;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;max-width:calc(100% - 32px);text-align:center;pointer-events:none;transition:.25s}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
 /* ---------- confetti ---------- */
 #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:70}
 
@@ -384,6 +393,7 @@ svg.d-glitch{animation:glitchF 1.2s steps(1) infinite}
   <header>
     <h1>👛 <span id="appName"></span> <span id="seasonIcon" style="font-size:16px"></span></h1>
     <div class="garland" id="garland" style="display:none"></div>
+    <button class="sync-dot" id="syncDot" hidden aria-label="sync"></button>
     <div class="lang" id="lang"><button data-l="be">BE</button><button data-l="uk">UA</button></div>
     <div class="month-nav">
       <button class="btn icon" id="prev" aria-label="‹">‹</button>
@@ -436,6 +446,7 @@ svg.d-glitch{animation:glitchF 1.2s steps(1) infinite}
 </div>
 <div id="season" aria-hidden="true"></div>
 <canvas id="confetti"></canvas>
+<div class="toast" id="toast"></div>
 <div class="wr" id="wr"></div>
 <dialog id="dlg"><form method="dialog" id="dlgForm"></form></dialog>
 
@@ -477,6 +488,16 @@ const I18N = {
     spendT:'Трата', newInc:'Новы даход', inc:'Даход', noSpends:'Траты яшчэ не запісаны.', catSettings:'Налады катэгорыі',
     quickAdd:'Што дадаць?', qSpend:'Трата па катэгорыі', qOne:'Аднаразовы расход', qRec:'Пастаянны плацёж', qSpendSub:'ежа, кава, кот…', qOneSub:'падарунак, тэхніка', qRecSub:'арэнда, падпіска',
     needCat:'Спачатку дадай катэгорыю', mascot:'Танцор у куце',
+    syncT:'Сінхранізацыя паміж прыладамі', syIntro:'Пакуль усё ляжыць толькі ў гэтым браўзеры. На першай прыладзе ўстаў сюды GitHub токен з правам gist. На другой устаў спасылку з налад першай (ці проста адкрый яе).',
+    syPh:'Токен або спасылка', syConnect:'Падключыць', syMakeToken:'Стварыць токен на GitHub', syTokenHint:'падыдзе і той жа, што для Шуфлядкі',
+    syOn:'Падключана да GitHub <b>{0}</b>, сховішча <b>#{1}</b>.', syShare:'Спасылка для другой прылады', syNow:'Сінхранізаваць', syDisc:'Адключыць',
+    syWarn:'У спасылцы схаваны ключ доступу, таму дасылай яе толькі ў асабісты чат.',
+    syBusy:'Сінхранізую…', syErr:'Не атрымалася дастукацца да GitHub, паспрабую яшчэ.', syOff:'Няма інтэрнэту, змены адпраўлю пазней.', syLast:'Апошняя сінхранізацыя ў {0}.',
+    syPulled:'Падцягнуў змены з другой прылады', syBadToken:'GitHub не прыняў токен. Правер, ці ён скапіяваўся цалкам.', syBadLink:'Спасылка пашкоджаная', syAlready:'Гэтая прылада ўжо падключаная',
+    syJoinAsk:'Падключыць гэтую прыладу да агульнага Капшука?\nДадзеныя, якія зараз ляжаць тут, заменяцца агульнымі.', syJoined:'Гатова, прылады звязаныя!', syFail:'Не атрымалася падключыцца. Правер інтэрнэт.',
+    syEmpty:'Устаў токен або спасылку', syFoundAsk:'На гэтым GitHub ужо ёсць агульны Капшук. Далучыцца да яго?\nДадзеныя, якія зараз ляжаць тут, заменяцца агульнымі.',
+    syCreated:'Падключана! Цяпер адкрый спасылку з налад на другой прыладзе.', syScope:'Токену не хапае права gist.', syOffAsk:'Адключыць гэтую прыладу? Дадзеныя застануцца тут, але перастануць сінхранізавацца.', syCopied:'Спасылка скапіявана',
+
     tab_jars:'Скарбонкі', jarsT:'Скарбонкі', jarLegend:'Скарбонкі',
     jarHint:'Адкладай на мэты. Тое, што кладзеш у скарбонку, адымаецца ад вольнай сумы месяца.',
     jarNone:'Пакуль ніводнай скарбонкі. Стварай першую!', newJar:'Новая скарбонка', jarT:'Скарбонка',
@@ -539,6 +560,16 @@ const I18N = {
     spendT:'Витрата', newInc:'Новий дохід', inc:'Дохід', noSpends:'Витрати ще не записані.', catSettings:'Налаштування категорії',
     quickAdd:'Що додати?', qSpend:'Витрата за категорією', qOne:'Разова витрата', qRec:'Постійний платіж', qSpendSub:'їжа, кава, кіт…', qOneSub:'подарунок, техніка', qRecSub:'оренда, підписка',
     needCat:'Спершу додай категорію', mascot:'Танцюрист у кутку',
+    syncT:'Синхронізація між пристроями', syIntro:'Поки все лежить тільки в цьому браузері. На першому пристрої встав сюди GitHub токен з правом gist. На другому встав посилання з налаштувань першого (або просто відкрий його).',
+    syPh:'Токен або посилання', syConnect:'Підключити', syMakeToken:'Створити токен на GitHub', syTokenHint:'підійде й той самий, що для Шуфлядки',
+    syOn:'Підключено до GitHub <b>{0}</b>, сховище <b>#{1}</b>.', syShare:'Посилання для другого пристрою', syNow:'Синхронізувати', syDisc:'Відключити',
+    syWarn:'У посиланні захований ключ доступу, тож надсилай його тільки в особистий чат.',
+    syBusy:'Синхронізую…', syErr:'Не вдалося достукатися до GitHub, спробую ще.', syOff:'Немає інтернету, зміни надішлю пізніше.', syLast:'Остання синхронізація о {0}.',
+    syPulled:'Підтягнув зміни з іншого пристрою', syBadToken:'GitHub не прийняв токен. Перевір, чи він скопіювався повністю.', syBadLink:'Посилання пошкоджене', syAlready:'Цей пристрій уже підключено',
+    syJoinAsk:'Підключити цей пристрій до спільного Гаманця?\nДані, що зараз лежать тут, заміняться спільними.', syJoined:'Готово, пристрої з’єднано!', syFail:'Не вдалося підключитися. Перевір інтернет.',
+    syEmpty:'Встав токен або посилання', syFoundAsk:'На цьому GitHub уже є спільний Гаманець. Приєднатися до нього?\nДані, що зараз лежать тут, заміняться спільними.',
+    syCreated:'Підключено! Тепер відкрий посилання з налаштувань на другому пристрої.', syScope:'Токену бракує права gist.', syOffAsk:'Відключити цей пристрій? Дані залишаться тут, але перестануть синхронізуватися.', syCopied:'Посилання скопійовано',
+
     tab_jars:'Скарбнички', jarsT:'Скарбнички', jarLegend:'Скарбнички',
     jarHint:'Відкладай на цілі. Те, що кладеш у скарбничку, віднімається від вільної суми місяця.',
     jarNone:'Поки жодної скарбнички. Створи першу!', newJar:'Нова скарбничка', jarT:'Скарбничка',
@@ -614,7 +645,7 @@ function load() {
   const nav = (navigator.language || '').toLowerCase();
   return demo(nav.startsWith('uk') || nav.startsWith('ru-ua') ? 'uk' : 'be');
 }
-function save() { memStore = S; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+function save() { markChanges(); memStore = S; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} scheduleSync(); }
 S = load();
 S.jars = S.jars || []; S.jarMoves = S.jarMoves || [];
 LANG = S.settings.lang || 'be';
@@ -817,6 +848,10 @@ function vSettings() {
     ${S.budgets.map(b => `<div class="row tap" data-act="editBud" data-id="${b.id}"><div class="name"><div>${esc(b.name)}</div></div><div class="amt">${money(b.limit)}</div></div>`).join('') || `<div class="empty">${t('none')}</div>`}
   </section>
   <section class="card">
+    <h2 style="margin-bottom:10px">📡 ${t('syncT')}</h2>
+    ${syncBox()}
+  </section>
+  <section class="card">
     <h2 style="margin-bottom:12px">${t('general')}</h2>
     <div class="two">
       <label class="field"><span>${t('lang')}</span><select id="langSel"><option value="be" ${LANG === 'be' ? 'selected' : ''}>Беларуская</option><option value="uk" ${LANG === 'uk' ? 'selected' : ''}>Українська</option></select></label>
@@ -966,6 +1001,14 @@ view.addEventListener('click', e => {
       render();
     },
     toggleOne: () => { find(S.oneoffs, id).paid = el.checked; save(); if (el.checked) { celebrate(el, 'small'); mascotEvent('paid'); } render(); },
+    syncConnect: () => connectSync(document.getElementById('syncToken').value),
+    syncNow: () => sync(),
+    syncOff: () => { if (!confirm(t('syOffAsk'))) return; syncCfg = null; saveSyncCfg(); lastRemote = null; etag = null; setSyncState('idle'); render(); },
+    syncShare: async () => {
+      const link = joinLink(), inp = document.getElementById('syncLink');
+      inp.value = link; inp.hidden = false; inp.select();
+      try { if (navigator.share && matchMedia('(hover: none)').matches) await navigator.share({ title: t('appName'), url: link }); else { await navigator.clipboard.writeText(link); toast(t('syCopied')); } } catch (_) {}
+    },
     addJar: () => jarForm(), showJar: () => showJar(id), depJar: () => moveForm(id, 1), wrapped: () => openWrapped(),
     goMonth: () => { cur = el.dataset.m; tab = 'month'; render(); },
     export: () => {
@@ -974,9 +1017,10 @@ view.addEventListener('click', e => {
       a.download = `kapshuk-${todayISO()}.json`; a.click();
     },
     import: () => document.getElementById('file').click(),
-    reset: () => { if (confirm(t('confirmReset'))) { S = { settings: S.settings, incomes: [], recurring: [], budgets: [], spends: [], oneoffs: [], paid: {} }; save(); render(); } },
+    reset: () => { if (confirm(t('confirmReset'))) { S = { settings: S.settings, incomes: [], recurring: [], budgets: [], spends: [], oneoffs: [], jars: [], jarMoves: [], paid: {}, paidU: S.paidU, deleted: S.deleted, curU: S.curU }; save(); render(); } },
   })[el.dataset.act]?.();
 });
+view.addEventListener('keydown', e => { if (e.target.id === 'syncToken' && e.key === 'Enter') { e.preventDefault(); connectSync(e.target.value); } });
 view.addEventListener('change', e => {
   if (e.target.id === 'currency') { S.settings.currency = e.target.value.trim() || 'Kč'; save(); render(); }
   if (e.target.id === 'theme') { S.settings.theme = e.target.value; applyTheme(); save(); }
@@ -1295,6 +1339,203 @@ function closeWrapped() { clearTimeout(wrT); wr.classList.remove('on'); wr.inner
 wr.addEventListener('click', e => { if (e.target.closest('.wr-share,.wr-close')) return; wrGo(e.clientX < innerWidth * .33 ? -1 : 1); });
 document.addEventListener('keydown', e => { if (!wr.classList.contains('on')) return; if (e.key === 'Escape') closeWrapped(); if (e.key === 'ArrowRight') wrGo(1); if (e.key === 'ArrowLeft') wrGo(-1); });
 
+/* ---------- sync through a secret GitHub gist ---------- */
+const SYNCKEY = 'kapshuk.sync', DATA_FILE = 'kapshuk.json';
+const KINDS = ['incomes', 'recurring', 'budgets', 'spends', 'oneoffs', 'jars', 'jarMoves'];
+let syncCfg = (() => { try { return JSON.parse(localStorage.getItem(SYNCKEY) || 'null'); } catch (e) { return null; } })();
+const saveSyncCfg = () => { try { syncCfg ? localStorage.setItem(SYNCKEY, JSON.stringify(syncCfg)) : localStorage.removeItem(SYNCKEY); } catch (e) {} };
+let syncing = false, syncAgain = false, etag = null, lastRemote = null, syncState = 'idle', lastSyncAt = 0, syncTimer = 0, stamps = null;
+const deep = x => JSON.parse(JSON.stringify(x));
+const strip = x => { const { u, ...r } = x; return JSON.stringify(r); };
+
+// remember what every item looked like, so a save can tell which ones changed or vanished
+function collectStamps() {
+  const st = {};
+  for (const k of KINDS) for (const x of S[k] || []) st[k + ':' + x.id] = strip(x);
+  for (const [rid, months] of Object.entries(S.paid || {})) for (const [m, v] of Object.entries(months)) st['paid:' + rid + '|' + m] = String(!!v);
+  st['cur:'] = S.settings.currency;
+  return st;
+}
+function primeStamps() { stamps = collectStamps(); }
+function markChanges() {
+  if (!stamps) return primeStamps();
+  const now = Date.now(), st = collectStamps();
+  S.deleted = S.deleted || {}; S.paidU = S.paidU || {};
+  for (const k of KINDS) for (const x of S[k] || []) { const key = k + ':' + x.id; if (stamps[key] !== st[key]) x.u = now; }
+  for (const key of Object.keys(st)) if (key.startsWith('paid:') && stamps[key] !== st[key]) S.paidU[key.slice(5)] = now;
+  if (stamps['cur:'] !== st['cur:']) S.curU = now;
+  for (const key of Object.keys(stamps)) if (!(key in st) && !key.startsWith('paid:') && key !== 'cur:') S.deleted[key] = now;
+  stamps = st;
+}
+const snapshot = () => { const o = { v: 1, currency: S.settings.currency, curU: S.curU || 0, paid: S.paid || {}, paidU: S.paidU || {}, deleted: S.deleted || {} }; for (const k of KINDS) o[k] = S[k] || []; return o; };
+const byId = (a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+const canon = d => JSON.stringify([d.currency, ...KINDS.map(k => [...(d[k] || [])].sort(byId)), Object.keys(d.paid || {}).sort().map(r => [r, d.paid[r]]), Object.keys(d.deleted || {}).sort()]);
+
+// item by item: the newer change wins, a deletion wins over older edits
+function mergeData(L, R) {
+  const del = { ...(R.deleted || {}) };
+  for (const [k, v] of Object.entries(L.deleted || {})) if (!(del[k] >= v)) del[k] = v;
+  const cutoff = Date.now() - 120 * 864e5;
+  for (const k of Object.keys(del)) if (del[k] < cutoff) delete del[k];
+  const out = { v: 1, deleted: del };
+  for (const kind of KINDS) {
+    const la = L[kind] || [], ra = R[kind] || [], m = new Map(ra.map(x => [x.id, x]));
+    for (const x of la) { const r = m.get(x.id); if (!r || (x.u || 0) >= (r.u || 0)) m.set(x.id, x); }
+    out[kind] = [...m.values()].filter(x => !(del[kind + ':' + x.id] >= (x.u || 0)));
+  }
+  const paid = {}, paidU = { ...(R.paidU || {}) };
+  const put = (src, srcU, preferNewer) => { for (const [rid, months] of Object.entries(src || {})) for (const [mm, v] of Object.entries(months)) {
+    const k = rid + '|' + mm, u = (srcU || {})[k] || 0;
+    if (!preferNewer || !(k in paidU) || u >= paidU[k]) { (paid[rid] = paid[rid] || {})[mm] = v; if (preferNewer) paidU[k] = u; }
+  } };
+  put(R.paid, R.paidU, false); put(L.paid, L.paidU, true);
+  out.paid = paid; out.paidU = paidU;
+  const localCur = (L.curU || 0) >= (R.curU || 0) || !R.currency;
+  out.currency = localCur ? L.currency : R.currency; out.curU = Math.max(L.curU || 0, R.curU || 0);
+  return out;
+}
+function applyRemote(M) {
+  for (const k of KINDS) S[k] = M[k] || [];
+  S.paid = M.paid || {}; S.paidU = M.paidU || {}; S.deleted = M.deleted || {};
+  if (M.currency) S.settings.currency = M.currency; S.curU = M.curU || 0;
+  primeStamps(); memStore = S; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+  if (!dlg.open) render();
+}
+async function gh(method, path, body, headers = {}) {
+  const res = await fetch('https://api.github.com' + path, {
+    method, cache: 'no-store',
+    headers: { Authorization: `Bearer ${syncCfg.token}`, Accept: 'application/vnd.github+json', ...(body ? { 'Content-Type': 'application/json' } : {}), ...headers },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (res.status === 304) return { status: 304 };
+  if (!res.ok) { const e = new Error('GitHub ' + res.status); e.status = res.status; throw e; }
+  return { status: res.status, etag: res.headers.get('ETag'), json: await res.json() };
+}
+const emptyRemote = () => ({ v: 1, deleted: {}, paid: {}, paidU: {} });
+async function pullRemote() {
+  const r = await gh('GET', `/gists/${syncCfg.data}`, null, etag ? { 'If-None-Match': etag } : {});
+  if (r.status === 304) { if (lastRemote) return null; etag = null; return pullRemote(); }
+  etag = r.etag;
+  const f = r.json.files && r.json.files[DATA_FILE];
+  if (!f) return emptyRemote();
+  return JSON.parse(f.truncated ? await (await fetch(f.raw_url, { cache: 'no-store' })).text() : f.content);
+}
+function scheduleSync(ms = 1500) { if (!syncCfg || !syncCfg.data) return; clearTimeout(syncTimer); syncTimer = setTimeout(sync, ms); }
+async function sync() {
+  if (!syncCfg || !syncCfg.data) return;
+  if (syncing) { syncAgain = true; return; }
+  if (!navigator.onLine) return setSyncState('off');
+  syncing = true; setSyncState('busy');
+  try {
+    const remote = await pullRemote();
+    const base = remote || lastRemote || emptyRemote();
+    const local = snapshot(), merged = mergeData(local, base);
+    if (canon(merged) !== canon(local)) { applyRemote(merged); if (remote) toast(t('syPulled')); }
+    const out = deep(snapshot());
+    if (canon(out) !== canon(base)) { await gh('PATCH', `/gists/${syncCfg.data}`, { files: { [DATA_FILE]: { content: JSON.stringify(out) } } }); etag = null; }
+    lastRemote = out; lastSyncAt = Date.now(); setSyncState('ok');
+  } catch (e) {
+    setSyncState(navigator.onLine ? 'err' : 'off');
+    if (e.status === 401) toast(t('syBadToken'));
+  } finally {
+    syncing = false;
+    if (syncAgain) { syncAgain = false; scheduleSync(800); }
+  }
+}
+const pad2 = n => String(n).padStart(2, '0');
+function syncStatusText() {
+  if (syncState === 'busy') return t('syBusy');
+  if (syncState === 'err') return t('syErr');
+  if (syncState === 'off') return t('syOff');
+  if (lastSyncAt) { const d = new Date(lastSyncAt); return t('syLast', pad2(d.getHours()) + ':' + pad2(d.getMinutes())); }
+  return '';
+}
+function setSyncState(st) {
+  syncState = st;
+  const b = document.getElementById('syncDot');
+  b.hidden = !(syncCfg && syncCfg.data); b.className = 'sync-dot is-' + st; b.title = syncStatusText();
+  const s = document.getElementById('syncStatus'); if (s) s.textContent = syncStatusText();
+}
+const b64url = s => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64url = s => decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/'))));
+const joinLink = () => `${location.origin}${location.pathname}#join=${b64url(JSON.stringify({ t: syncCfg.token, d: syncCfg.data, o: syncCfg.owner }))}`;
+const parseJoin = text => { const m = String(text).match(/#join=([\w-]+)/); if (!m) return null; try { return JSON.parse(unb64url(m[1])); } catch (e) { return null; } };
+
+// join an existing shared gist: what is on this device is replaced by the shared data
+async function joinWith(cfg, ask = true) {
+  if (!cfg || !cfg.t || !cfg.d) return toast(t('syBadLink'));
+  if (syncCfg && syncCfg.data === cfg.d) return toast(t('syAlready'));
+  if (ask && !confirm(t('syJoinAsk'))) return;
+  const prev = syncCfg;
+  syncCfg = { token: cfg.t, data: cfg.d, owner: cfg.o };
+  try {
+    etag = null; lastRemote = null;
+    if (!syncCfg.owner) syncCfg.owner = (await gh('GET', '/user')).json.login;
+    const remote = await pullRemote();
+    applyRemote({ ...emptyRemote(), ...remote });
+    lastRemote = deep(snapshot());
+    saveSyncCfg(); lastSyncAt = Date.now(); setSyncState('ok'); render();
+    toast(t('syJoined')); celebrate(null, 'mid'); mascotSay('синхронізовано! ⟟⏃⋔ 📡');
+  } catch (e) {
+    syncCfg = prev;
+    toast(e.status === 401 ? t('syBadToken') : t('syFail'));
+  }
+}
+// the field takes a token (first device) or a link from another device;
+// with a token it first looks for a shared gist that already exists, so devices never end up in different ones
+async function connectSync(input) {
+  input = (input || '').trim();
+  if (!input) return toast(t('syEmpty'));
+  const link = parseJoin(input);
+  if (link) return joinWith(link);
+  const token = input, prev = syncCfg;
+  syncCfg = { token };
+  try {
+    const me = await gh('GET', '/user');
+    const list = (await gh('GET', '/gists?per_page=100')).json || [];
+    const found = list.filter(g => g.files && g.files[DATA_FILE]).sort((a, b) => a.created_at.localeCompare(b.created_at))[0];
+    if (found) {
+      syncCfg = prev;
+      if (!confirm(t('syFoundAsk'))) return;
+      return joinWith({ t: token, d: found.id, o: me.json.login }, false);
+    }
+    markChanges();
+    const out = deep(snapshot());
+    const c = await gh('POST', '/gists', { description: 'Капшук: агульны бюджэт', public: false, files: { [DATA_FILE]: { content: JSON.stringify(out) } } });
+    syncCfg = { token, data: c.json.id, owner: me.json.login };
+    saveSyncCfg(); lastRemote = out; etag = null; lastSyncAt = Date.now();
+    setSyncState('ok'); render();
+    toast(t('syCreated')); celebrate(null, 'mid');
+  } catch (e) {
+    syncCfg = prev;
+    toast(e.status === 401 ? t('syBadToken') : (e.status === 403 || e.status === 404) ? t('syScope') : t('syFail'));
+  }
+}
+async function joinFromHash() {
+  if (!location.hash.startsWith('#join=')) return;
+  const cfg = parseJoin(location.hash);
+  history.replaceState(null, '', location.pathname + location.search);
+  return joinWith(cfg);
+}
+function syncBox() {
+  if (!(syncCfg && syncCfg.data)) return `<p class="hint">${t('syIntro')}</p>
+    <div style="display:flex;gap:8px"><input id="syncToken" type="password" placeholder="${t('syPh')}" autocomplete="off" spellcheck="false" style="flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:16px"><button class="btn primary" data-act="syncConnect">${t('syConnect')}</button></div>
+    <p class="hint" style="margin-top:8px"><a href="https://github.com/settings/tokens/new?scopes=gist&description=Kapshuk" target="_blank" rel="noopener" style="color:var(--accent)">${t('syMakeToken')}</a> · ${t('syTokenHint')}</p>`;
+  return `<p class="hint">${t('syOn', esc(syncCfg.owner || ''), esc(String(syncCfg.data).slice(-6)))} <span id="syncStatus">${esc(syncStatusText())}</span></p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-act="syncShare">${t('syShare')}</button><button class="btn" data-act="syncNow">${t('syNow')}</button><button class="btn" data-act="syncOff" style="color:var(--danger)">${t('syDisc')}</button></div>
+    <input id="syncLink" readonly hidden style="width:100%;margin-top:8px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:12px">
+    <p class="hint" style="margin-top:8px">${t('syWarn')}</p>`;
+}
+let toastT = 0;
+function toast(msg) {
+  const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), 3200);
+}
+setInterval(() => { if (syncCfg && syncCfg.data && document.visibilityState === 'visible') sync(); }, 20000);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') sync(); });
+window.addEventListener('online', () => sync());
+window.addEventListener('storage', e => { if (e.key !== KEY) return; try { const fresh = JSON.parse(e.newValue); if (fresh) { S = fresh; primeStamps(); render(); } } catch (_) {} });
+
 /* ---------- mascot ---------- */
 const mEl = document.getElementById('mascot'), mSvg = document.getElementById('mSvg'), mBub = document.getElementById('mBubble');
 const DANCES = ['d-wiggle', 'd-robot', 'd-spin', 'd-float', 'd-shimmy', 'd-moon', 'd-heli', 'd-disco', 'd-bang', 'd-glitch'];
@@ -1332,8 +1573,14 @@ function mascotEvent(k) { if (S.settings.mascot === false) return; const a = EV[
 mascotShow();
 setTimeout(() => { mascotSay(themeSay() || 'уабулабудуптуп!'); if ((THEMES[currentTheme()] || {}).party) celebrate(null, 'big'); }, 900);
 
+document.getElementById('syncDot').onclick = () => { tab = 'settings'; render(); scrollTo(0, document.body.scrollHeight); };
+primeStamps();
 applyTheme();
 render();
+setSyncState('idle');
+joinFromHash();
+window.addEventListener('hashchange', joinFromHash);
+sync();
 </script>
 </body>
 </html>
